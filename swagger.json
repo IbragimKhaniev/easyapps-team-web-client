@@ -90,6 +90,1861 @@
           }
         }
       },
+      "SocialPlatform": {
+        "type": "string",
+        "enum": [
+          "telegram",
+          "instagram",
+          "vk"
+        ]
+      },
+      "MediaKind": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video",
+          "audio",
+          "document"
+        ]
+      },
+      "SocialContentType": {
+        "type": "string",
+        "enum": [
+          "text",
+          "photo",
+          "video",
+          "album",
+          "reel",
+          "story",
+          "document",
+          "audio",
+          "other"
+        ]
+      },
+      "Pagination": {
+        "type": "object",
+        "required": [
+          "page",
+          "limit",
+          "totalItems",
+          "totalPages",
+          "hasNextPage",
+          "hasPrevPage"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPrevPage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AssetSort": {
+        "type": "string",
+        "enum": [
+          "newest",
+          "oldest",
+          "largest",
+          "smallest",
+          "name"
+        ]
+      },
+      "MediaAsset": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "fileName",
+          "mimeType",
+          "size",
+          "width",
+          "height",
+          "durationSec",
+          "tags",
+          "description",
+          "url",
+          "thumbnailUrl",
+          "uploadedById",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MediaKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Байт"
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true
+          },
+          "durationSec": {
+            "type": "number",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Подписанная ссылка на файл (живёт час)"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "uploadedById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AssetUsage": {
+        "type": "object",
+        "required": [
+          "postId",
+          "title",
+          "plannedDate",
+          "status"
+        ],
+        "properties": {
+          "postId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "plannedDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaAssetDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MediaAsset"
+          },
+          {
+            "type": "object",
+            "required": [
+              "usage"
+            ],
+            "properties": {
+              "usage": {
+                "type": "array",
+                "description": "Посты контент-плана, где используется файл",
+                "items": {
+                  "$ref": "#/components/schemas/AssetUsage"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "UploadAssetBody": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "binary",
+            "description": "Кадр видео в JPEG/PNG — браузер снимает его при загрузке"
+          },
+          "title": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Метки через запятую"
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "durationSec": {
+            "type": "number"
+          }
+        }
+      },
+      "UpdateAssetBody": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AssetTag": {
+        "type": "object",
+        "required": [
+          "tag",
+          "count"
+        ],
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "StorageStatus": {
+        "type": "object",
+        "required": [
+          "configured",
+          "ok",
+          "bucket",
+          "endpoint",
+          "publicUrl",
+          "error",
+          "assetsCount",
+          "totalBytes"
+        ],
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "bucket": {
+            "type": "string",
+            "nullable": true
+          },
+          "endpoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicUrl": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "assetsCount": {
+            "type": "integer"
+          },
+          "totalBytes": {
+            "type": "integer"
+          }
+        }
+      },
+      "MediaAssetListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data",
+          "pagination"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaAsset"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaAssetResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaAsset"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaAssetDetailResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaAssetDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AssetTagListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetTag"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "StorageStatusResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorageStatus"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaPostStatus": {
+        "type": "string",
+        "enum": [
+          "idea",
+          "draft",
+          "scheduled",
+          "publishing",
+          "published",
+          "partial",
+          "failed",
+          "canceled"
+        ]
+      },
+      "MediaTargetStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "publishing",
+          "processing",
+          "published",
+          "failed",
+          "skipped"
+        ]
+      },
+      "InstagramPostType": {
+        "type": "string",
+        "enum": [
+          "feed",
+          "reel",
+          "story"
+        ]
+      },
+      "PostTargetOptions": {
+        "type": "object",
+        "properties": {
+          "silent": {
+            "type": "boolean",
+            "description": "Telegram: без звука уведомления"
+          },
+          "disablePreview": {
+            "type": "boolean",
+            "description": "Telegram: без превью ссылки"
+          },
+          "pin": {
+            "type": "boolean",
+            "description": "Telegram: закрепить"
+          },
+          "instagramType": {
+            "$ref": "#/components/schemas/InstagramPostType"
+          },
+          "shareToFeed": {
+            "type": "boolean",
+            "description": "Instagram: рилс и в ленте профиля"
+          },
+          "signed": {
+            "type": "boolean",
+            "description": "VK: подпись автора"
+          },
+          "closeComments": {
+            "type": "boolean",
+            "description": "VK: закрыть комментарии"
+          }
+        }
+      },
+      "PostTarget": {
+        "type": "object",
+        "required": [
+          "platform",
+          "enabled",
+          "text",
+          "mediaIds",
+          "options",
+          "status",
+          "attempts",
+          "nextAttemptAt",
+          "externalIds",
+          "externalUrl",
+          "publishedAt",
+          "error"
+        ],
+        "properties": {
+          "platform": {
+            "$ref": "#/components/schemas/SocialPlatform"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "nullable": true,
+            "description": "Свой текст площадки; null — общий"
+          },
+          "mediaIds": {
+            "type": "array",
+            "nullable": true,
+            "description": "Свои файлы площадки; null — общие",
+            "items": {
+              "type": "string"
+            }
+          },
+          "options": {
+            "$ref": "#/components/schemas/PostTargetOptions"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MediaTargetStatus"
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "nextAttemptAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "externalIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "externalUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PostIssue": {
+        "type": "object",
+        "required": [
+          "platform",
+          "level",
+          "message"
+        ],
+        "properties": {
+          "platform": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SocialPlatform"
+              }
+            ],
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PostCover": {
+        "type": "object",
+        "required": [
+          "kind",
+          "thumbnailUrl"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/MediaKind"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "MediaPost": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "text",
+          "mediaIds",
+          "plannedDate",
+          "publishAt",
+          "status",
+          "rubric",
+          "notes",
+          "targets",
+          "cover",
+          "mediaCount",
+          "issues",
+          "createdById",
+          "updatedById",
+          "createdAt",
+          "updatedAt",
+          "publishedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "Разметка: **жирный**, __курсив__, [ссылка](https://…), `код`"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plannedDate": {
+            "type": "string",
+            "example": "2026-10-20"
+          },
+          "publishAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/MediaPostStatus"
+          },
+          "rubric": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostTarget"
+            }
+          },
+          "cover": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PostCover"
+              }
+            ],
+            "nullable": true
+          },
+          "mediaCount": {
+            "type": "integer"
+          },
+          "issues": {
+            "type": "array",
+            "description": "Что помешает посту выйти (ошибки) и подсказки (предупреждения)",
+            "items": {
+              "$ref": "#/components/schemas/PostIssue"
+            }
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "updatedById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "MediaPostDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MediaPost"
+          },
+          {
+            "type": "object",
+            "required": [
+              "media"
+            ],
+            "properties": {
+              "media": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MediaAsset"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MediaSummary": {
+        "type": "object",
+        "required": [
+          "next",
+          "scheduledCount",
+          "failedCount",
+          "publishedLast7Days",
+          "ideasCount"
+        ],
+        "properties": {
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaPost"
+              }
+            ],
+            "nullable": true
+          },
+          "scheduledCount": {
+            "type": "integer"
+          },
+          "failedCount": {
+            "type": "integer"
+          },
+          "publishedLast7Days": {
+            "type": "integer"
+          },
+          "ideasCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostTargetInput": {
+        "type": "object",
+        "required": [
+          "platform",
+          "enabled"
+        ],
+        "properties": {
+          "platform": {
+            "$ref": "#/components/schemas/SocialPlatform"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "options": {
+            "$ref": "#/components/schemas/PostTargetOptions"
+          }
+        }
+      },
+      "CreateMediaPostBody": {
+        "type": "object",
+        "required": [
+          "title",
+          "plannedDate"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plannedDate": {
+            "type": "string"
+          },
+          "rubric": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostTargetInput"
+            }
+          },
+          "idea": {
+            "type": "boolean",
+            "description": "Идея — строка плана без содержимого"
+          }
+        }
+      },
+      "UpdateMediaPostBody": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plannedDate": {
+            "type": "string"
+          },
+          "rubric": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostTargetInput"
+            }
+          }
+        }
+      },
+      "ScheduleMediaPostBody": {
+        "type": "object",
+        "required": [
+          "publishAt",
+          "plannedDate"
+        ],
+        "properties": {
+          "publishAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Момент публикации с часовым поясом"
+          },
+          "plannedDate": {
+            "type": "string",
+            "description": "День плана в часовом поясе команды"
+          }
+        }
+      },
+      "PublishNowBody": {
+        "type": "object",
+        "properties": {
+          "plannedDate": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaPostListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaPost"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaPostResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaPost"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaPostDetailResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaPostDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaSummaryResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MediaSummary"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "IntegrationStatus": {
+        "type": "string",
+        "enum": [
+          "not_configured",
+          "connected",
+          "error"
+        ]
+      },
+      "IntegrationFieldType": {
+        "type": "string",
+        "enum": [
+          "text",
+          "number",
+          "url",
+          "secret"
+        ]
+      },
+      "IntegrationField": {
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "type",
+          "required"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IntegrationFieldType"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string"
+          }
+        }
+      },
+      "IntegrationAccount": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "handle",
+          "avatarUrl",
+          "followers"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "handle": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "followers": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Integration": {
+        "type": "object",
+        "required": [
+          "platform",
+          "title",
+          "enabled",
+          "status",
+          "account",
+          "settings",
+          "secrets",
+          "fields",
+          "lastCheckedAt",
+          "lastError",
+          "lastWarning",
+          "tokenExpiresAt",
+          "mtprotoConnected",
+          "mtprotoUser",
+          "canStoreSecrets"
+        ],
+        "properties": {
+          "platform": {
+            "$ref": "#/components/schemas/SocialPlatform"
+          },
+          "title": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IntegrationStatus"
+          },
+          "account": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationAccount"
+              }
+            ],
+            "nullable": true
+          },
+          "settings": {
+            "type": "object",
+            "description": "Несекретные поля как есть (строка, число или null)",
+            "additionalProperties": {
+              "nullable": true,
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "secrets": {
+            "type": "object",
+            "description": "Секреты: «…a1b2», если задан, иначе null",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationField"
+            }
+          },
+          "lastCheckedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastWarning": {
+            "type": "string",
+            "nullable": true
+          },
+          "tokenExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "mtprotoConnected": {
+            "type": "boolean"
+          },
+          "mtprotoUser": {
+            "type": "string",
+            "nullable": true
+          },
+          "canStoreSecrets": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateIntegrationBody": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Несекретные поля: null или пустая строка — стереть",
+            "additionalProperties": {
+              "nullable": true,
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "secrets": {
+            "type": "object",
+            "description": "Секреты: строка — записать, null или пустая строка — стереть, не прислали — оставить",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        }
+      },
+      "MtprotoCodeBody": {
+        "type": "object",
+        "required": [
+          "phone"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+79991234567"
+          }
+        }
+      },
+      "MtprotoCodeResult": {
+        "type": "object",
+        "required": [
+          "viaApp"
+        ],
+        "properties": {
+          "viaApp": {
+            "type": "boolean",
+            "description": "Код пришёл в приложение Telegram (а не SMS)"
+          }
+        }
+      },
+      "MtprotoSignInBody": {
+        "type": "object",
+        "required": [
+          "phone",
+          "code"
+        ],
+        "properties": {
+          "phone": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "description": "Облачный пароль, если включена двухэтапная проверка"
+          }
+        }
+      },
+      "MediaJob": {
+        "type": "object",
+        "required": [
+          "name",
+          "title",
+          "intervalMs",
+          "running",
+          "lastStartedAt",
+          "lastFinishedAt",
+          "lastStatus",
+          "lastError",
+          "lastSummary",
+          "lastDurationMs",
+          "runs"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "intervalMs": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "lastStartedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastFinishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastStatus": {
+            "type": "string",
+            "nullable": true,
+            "description": "ok | error | skipped"
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastSummary": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastDurationMs": {
+            "type": "integer",
+            "nullable": true
+          },
+          "runs": {
+            "type": "integer"
+          }
+        }
+      },
+      "IntegrationListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Integration"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "IntegrationResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Integration"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MtprotoCodeResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MtprotoCodeResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "MediaJobListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaJob"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "FeedSort": {
+        "type": "string",
+        "enum": [
+          "newest",
+          "views",
+          "engagement"
+        ]
+      },
+      "SocialMetrics": {
+        "type": "object",
+        "description": "null — площадка эту метрику не считает",
+        "required": [
+          "views",
+          "reach",
+          "likes",
+          "comments",
+          "shares",
+          "saves",
+          "reactions",
+          "plays"
+        ],
+        "properties": {
+          "views": {
+            "type": "integer",
+            "nullable": true
+          },
+          "reach": {
+            "type": "integer",
+            "nullable": true
+          },
+          "likes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "comments": {
+            "type": "integer",
+            "nullable": true
+          },
+          "shares": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Репосты VK, пересылки Telegram, «поделились» Instagram"
+          },
+          "saves": {
+            "type": "integer",
+            "nullable": true
+          },
+          "reactions": {
+            "type": "integer",
+            "nullable": true
+          },
+          "plays": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "SocialPost": {
+        "type": "object",
+        "required": [
+          "id",
+          "platform",
+          "externalId",
+          "url",
+          "publishedAt",
+          "text",
+          "contentType",
+          "previewUrl",
+          "mediaCount",
+          "metrics",
+          "interactions",
+          "engagementRate",
+          "metricsUpdatedAt",
+          "teamPostId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/SocialPlatform"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "text": {
+            "type": "string"
+          },
+          "contentType": {
+            "$ref": "#/components/schemas/SocialContentType"
+          },
+          "previewUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaCount": {
+            "type": "integer"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/SocialMetrics"
+          },
+          "interactions": {
+            "type": "integer"
+          },
+          "engagementRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Вовлечённость, % (взаимодействия / охват или просмотры)"
+          },
+          "metricsUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "teamPostId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "MetricPoint": {
+        "type": "object",
+        "required": [
+          "at",
+          "metrics"
+        ],
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/SocialMetrics"
+          }
+        }
+      },
+      "SocialPostDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SocialPost"
+          },
+          {
+            "type": "object",
+            "required": [
+              "history",
+              "teamPost"
+            ],
+            "properties": {
+              "history": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MetricPoint"
+                }
+              },
+              "teamPost": {
+                "type": "object",
+                "nullable": true,
+                "required": [
+                  "id",
+                  "title"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "SocialPostListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data",
+          "pagination"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialPost"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "SocialPostDetailResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SocialPostDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PlatformSummary": {
+        "type": "object",
+        "required": [
+          "platform",
+          "followers",
+          "followersDelta",
+          "posts",
+          "views",
+          "reach",
+          "interactions",
+          "engagementRate",
+          "avgViewsPerPost",
+          "updatedAt"
+        ],
+        "properties": {
+          "platform": {
+            "$ref": "#/components/schemas/SocialPlatform"
+          },
+          "followers": {
+            "type": "integer",
+            "nullable": true
+          },
+          "followersDelta": {
+            "type": "integer",
+            "nullable": true
+          },
+          "posts": {
+            "type": "integer"
+          },
+          "views": {
+            "type": "integer"
+          },
+          "reach": {
+            "type": "integer",
+            "nullable": true
+          },
+          "interactions": {
+            "type": "integer"
+          },
+          "engagementRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "avgViewsPerPost": {
+            "type": "integer",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "AnalyticsTotals": {
+        "type": "object",
+        "required": [
+          "followers",
+          "followersDelta",
+          "posts",
+          "views",
+          "interactions",
+          "engagementRate"
+        ],
+        "properties": {
+          "followers": {
+            "type": "integer"
+          },
+          "followersDelta": {
+            "type": "integer"
+          },
+          "posts": {
+            "type": "integer"
+          },
+          "views": {
+            "type": "integer"
+          },
+          "interactions": {
+            "type": "integer"
+          },
+          "engagementRate": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "SeriesPoint": {
+        "type": "object",
+        "required": [
+          "date",
+          "telegram",
+          "instagram",
+          "vk",
+          "total"
+        ],
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "telegram": {
+            "type": "number",
+            "nullable": true
+          },
+          "instagram": {
+            "type": "number",
+            "nullable": true
+          },
+          "vk": {
+            "type": "number",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "ContentTypeStat": {
+        "type": "object",
+        "required": [
+          "contentType",
+          "posts",
+          "avgViews",
+          "avgEngagementRate"
+        ],
+        "properties": {
+          "contentType": {
+            "$ref": "#/components/schemas/SocialContentType"
+          },
+          "posts": {
+            "type": "integer"
+          },
+          "avgViews": {
+            "type": "integer",
+            "nullable": true
+          },
+          "avgEngagementRate": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "BestTimeCell": {
+        "type": "object",
+        "required": [
+          "weekday",
+          "hour",
+          "posts",
+          "avgEngagementRate",
+          "avgViews"
+        ],
+        "properties": {
+          "weekday": {
+            "type": "integer",
+            "description": "0 — воскресенье"
+          },
+          "hour": {
+            "type": "integer"
+          },
+          "posts": {
+            "type": "integer"
+          },
+          "avgEngagementRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "avgViews": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Analytics": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "platform",
+          "totals",
+          "platforms",
+          "followersSeries",
+          "followersGainedSeries",
+          "followersLostSeries",
+          "accountViewsSeries",
+          "reachSeries",
+          "postViewsSeries",
+          "postsSeries",
+          "byContentType",
+          "bestTimes",
+          "topPosts"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "platform": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SocialPlatform"
+              }
+            ],
+            "nullable": true
+          },
+          "totals": {
+            "$ref": "#/components/schemas/AnalyticsTotals"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformSummary"
+            }
+          },
+          "followersSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "followersGainedSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "followersLostSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "accountViewsSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "reachSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "postViewsSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "postsSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            }
+          },
+          "byContentType": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentTypeStat"
+            }
+          },
+          "bestTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BestTimeCell"
+            }
+          },
+          "topPosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialPost"
+            }
+          }
+        }
+      },
+      "AnalyticsResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Analytics"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
       "TeamRole": {
         "type": "string",
         "enum": [
@@ -1412,6 +3267,14 @@
           "example": "EA-42"
         },
         "description": "Ключ задачи (`EA-42`), прежний ключ или id"
+      },
+      "SocialPlatformParam": {
+        "name": "platform",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/SocialPlatform"
+        }
       }
     }
   },
@@ -1515,6 +3378,1078 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/media/assets": {
+      "get": {
+        "operationId": "listMediaAssets",
+        "summary": "Медиатека",
+        "description": "Файлы с фильтрами и сортировкой, по страницам.",
+        "tags": [
+          "Media Assets"
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "Виды через запятую (image, video, audio, document)",
+            "schema": {
+              "type": "string",
+              "example": "image,video"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Поиск по названию и имени файла",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "uploadedBy",
+            "in": "query",
+            "description": "`me` или id участника",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Загружен не раньше (YYYY-MM-DD, UTC)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetSort"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Файлы",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaAssetListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "uploadMediaAsset",
+        "summary": "Загрузить файл",
+        "description": "multipart/form-data: `file` (до 2 ГБ) идёт потоком в S3, без\nпромежуточного диска. Для видео браузер присылает кадр `thumbnail` и\nразмеры. Картинкам превью делает сервер.\n",
+        "tags": [
+          "Media Assets"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadAssetBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Загружен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaAssetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/assets/tags": {
+      "get": {
+        "operationId": "listMediaAssetTags",
+        "summary": "Метки медиатеки",
+        "tags": [
+          "Media Assets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Метки с числом файлов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTagListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/assets/storage": {
+      "get": {
+        "operationId": "getMediaStorageStatus",
+        "summary": "Состояние хранилища",
+        "tags": [
+          "Media Assets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Хранилище",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/assets/storage/cors": {
+      "post": {
+        "operationId": "applyMediaStorageCors",
+        "summary": "Открыть бакет нашим сайтам",
+        "description": "CORS бакета на чтение с адресов фронта — для видеоплеера и превью.",
+        "tags": [
+          "Media Assets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Готово",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/assets/{id}": {
+      "get": {
+        "operationId": "getMediaAsset",
+        "summary": "Файл и где он используется",
+        "tags": [
+          "Media Assets"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Файл",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaAssetDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMediaAsset",
+        "summary": "Название, метки, описание",
+        "tags": [
+          "Media Assets"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaAssetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMediaAsset",
+        "summary": "Удалить файл",
+        "description": "Файл в запланированном посте удалить нельзя — сначала уберите его из поста.",
+        "tags": [
+          "Media Assets"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Удалён"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/media/posts": {
+      "get": {
+        "operationId": "listMediaPosts",
+        "summary": "Контент-план за период",
+        "description": "Посты и идеи по дню плана (не больше 93 дней за раз).",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-10-01"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2026-10-31"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Статусы через запятую",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SocialPlatform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Посты",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMediaPost",
+        "summary": "Новый пост или идея",
+        "tags": [
+          "Media Posts"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMediaPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          }
+        }
+      }
+    },
+    "/media/posts/summary": {
+      "get": {
+        "operationId": "getMediaSummary",
+        "summary": "Ближайшая публикация и счётчики",
+        "tags": [
+          "Media Posts"
+        ],
+        "responses": {
+          "200": {
+            "description": "Сводка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/posts/{id}": {
+      "get": {
+        "operationId": "getMediaPost",
+        "summary": "Пост с файлами",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Пост",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMediaPost",
+        "summary": "Правка поста",
+        "description": "Опубликованный или публикуемый пост — только название, рубрика и\nзаметки. Запланированный проверяется заново: не готов — 400 `POST_NOT_READY`.\n",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMediaPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMediaPost",
+        "summary": "В архив",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Убран"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/posts/{id}/duplicate": {
+      "post": {
+        "operationId": "duplicateMediaPost",
+        "summary": "Копия поста",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Копия — черновиком",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/posts/{id}/schedule": {
+      "post": {
+        "operationId": "scheduleMediaPost",
+        "summary": "Запланировать",
+        "description": "Проверка всех площадок поста; есть ошибки — 400 `POST_NOT_READY` со списком в `details.issues`.",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleMediaPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Запланирован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/posts/{id}/unschedule": {
+      "post": {
+        "operationId": "unscheduleMediaPost",
+        "summary": "Снять с расписания",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Снова черновик",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/posts/{id}/publish-now": {
+      "post": {
+        "operationId": "publishMediaPostNow",
+        "summary": "Опубликовать сейчас",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishNowBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ушёл в публикацию",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/posts/{id}/retry/{platform}": {
+      "post": {
+        "operationId": "retryMediaPostTarget",
+        "summary": "Повторить площадку с ошибкой",
+        "tags": [
+          "Media Posts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          },
+          {
+            "$ref": "#/components/parameters/SocialPlatformParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Площадка снова в очереди",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations": {
+      "get": {
+        "operationId": "listIntegrations",
+        "summary": "Площадки",
+        "description": "Telegram, Instagram, VK — статус, поля формы, «хвосты» ключей.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Площадки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/integrations/{platform}": {
+      "put": {
+        "operationId": "updateIntegration",
+        "summary": "Настройки и ключи площадки",
+        "tags": [
+          "Media Integrations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SocialPlatformParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIntegrationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сохранено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations/{platform}/test": {
+      "post": {
+        "operationId": "testIntegration",
+        "summary": "Проверить подключение",
+        "description": "Площадка отвечает, кто мы; итог — в `status`, `lastError`, `lastWarning`.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SocialPlatformParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Итог проверки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/integrations/telegram/mtproto/code": {
+      "post": {
+        "operationId": "sendTelegramMtprotoCode",
+        "summary": "Telegram: прислать код входа",
+        "description": "Вход аккаунтом администратора канала — для статистики и видео больше 50 МБ.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MtprotoCodeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Код отправлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MtprotoCodeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations/telegram/mtproto/sign-in": {
+      "post": {
+        "operationId": "signInTelegramMtproto",
+        "summary": "Telegram: войти по коду",
+        "tags": [
+          "Media Integrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MtprotoSignInBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вход выполнен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations/telegram/mtproto/logout": {
+      "post": {
+        "operationId": "logoutTelegramMtproto",
+        "summary": "Telegram: забыть вход",
+        "tags": [
+          "Media Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Сессия удалена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/integrations/jobs": {
+      "get": {
+        "operationId": "listMediaJobs",
+        "summary": "Фоновые задачи",
+        "description": "Публикация по расписанию и сбор статистики — когда шли и чем закончились.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Задачи",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaJobListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/media/integrations/jobs/{name}/run": {
+      "post": {
+        "operationId": "runMediaJob",
+        "summary": "Запустить задачу сейчас",
+        "tags": [
+          "Media Integrations"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "collect-telegram"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задача запрошена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaJobListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/feed": {
+      "get": {
+        "operationId": "listSocialPosts",
+        "summary": "Лента постов площадок",
+        "description": "Опубликованные нами и руками в приложениях площадок — с метриками.",
+        "tags": [
+          "Media Feed"
+        ],
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SocialPlatform"
+            }
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "description": "Виды через запятую",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/FeedSort"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Посты",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialPostListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          }
+        }
+      }
+    },
+    "/media/feed/{id}": {
+      "get": {
+        "operationId": "getSocialPost",
+        "summary": "Пост площадки и история метрик",
+        "tags": [
+          "Media Feed"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Пост",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialPostDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/media/analytics": {
+      "get": {
+        "operationId": "getMediaAnalytics",
+        "summary": "Аналитика площадок",
+        "description": "Все площадки вместе или одна. Ряды по дням — сутки в UTC; тепловая\nкарта «лучшее время» — в поясе `tz` (например `+03:00`).\n",
+        "tags": [
+          "Media Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SocialPlatform"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "+03:00"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Аналитика",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
           }
         }
       }
