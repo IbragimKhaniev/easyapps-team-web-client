@@ -1,5 +1,5 @@
 import { ChevronDown, LayoutGrid, List, Search, X } from 'lucide-react';
-import { useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 
 import { AdaptivePicker } from '@/components/common/AdaptivePicker';
 import { MemberAvatar } from '@/components/common/MemberAvatar';
@@ -19,18 +19,24 @@ export interface ITaskFiltersValue {
 
 const ALL = 'all';
 
-const FilterPill = ({ active, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) => (
-  <button
-    type="button"
-    className={cn(
-      'inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-[14px] font-semibold transition-colors',
-      active ? 'border-brand-300 bg-brand-50 text-brand-900' : 'border-black/[0.07] bg-white text-ink hover:bg-secondary',
-    )}
-    {...props}
-  >
-    {children}
-  </button>
+/** Капсула фильтра. forwardRef: её оборачивает триггер выбора (Radix передаёт ref). */
+const FilterPill = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }>(
+  ({ active, children, className, ...props }, ref) => (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        'inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-[14px] font-semibold transition-colors',
+        active ? 'border-brand-300 bg-brand-50 text-brand-900' : 'border-black/[0.07] bg-white text-ink hover:bg-secondary',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
 );
+FilterPill.displayName = 'FilterPill';
 
 interface ITaskFiltersProps {
   value: ITaskFiltersValue;

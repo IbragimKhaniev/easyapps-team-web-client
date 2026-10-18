@@ -15,13 +15,15 @@ interface IKpiCardProps {
   highlighted?: boolean;
   to?: string;
   className?: string;
+  /** Плотный ряд (5 плиток и длинные числа «21,6 тыс.») — цифра помельче. */
+  compact?: boolean;
 }
 
 /**
  * Плитка с крупной цифрой: подпись, стрелка-переход в круге, число и
  * изменение к прошлому периоду — ровно как ряд KPI в референсе.
  */
-export const KpiCard = ({ label, value, hint, delta, highlighted = false, to, className }: IKpiCardProps) => {
+export const KpiCard = ({ label, value, hint, delta, highlighted = false, to, className, compact = false }: IKpiCardProps) => {
   const body = (
     <>
       <div className="flex items-start justify-between gap-3">
@@ -35,7 +37,15 @@ export const KpiCard = ({ label, value, hint, delta, highlighted = false, to, cl
           <ArrowUpRight className="h-[18px] w-[18px]" />
         </span>
       </div>
-      <div className={cn('tabular mt-4 text-kpi', highlighted ? 'text-white' : 'text-ink')}>{value}</div>
+      <div
+        className={cn(
+          'tabular mt-4 whitespace-nowrap',
+          compact ? 'text-[2.375rem] font-bold leading-none tracking-[-0.035em]' : 'text-kpi',
+          highlighted ? 'text-white' : 'text-ink',
+        )}
+      >
+        {value}
+      </div>
       {(hint || delta !== undefined) && (
         <div className={cn('mt-3 flex items-center gap-2 text-xs font-medium', highlighted ? 'text-white/85' : 'text-brand-800')}>
           {delta !== undefined && delta !== 0 && (

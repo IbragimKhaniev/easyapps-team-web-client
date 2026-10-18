@@ -11,6 +11,9 @@ const DEFAULT_PROXY_TARGET = 'http://localhost:3100';
 /** Крупные библиотеки — отдельными чанками: кэшируются между выкладками. */
 const VENDOR_CHUNKS: Record<string, string[]> = {
   react: ['react', 'react-dom', 'react-router-dom', 'scheduler'],
+  // Мелкие утилиты классов — своим чанком: их тянут и графики (recharts → clsx),
+  // и без явного места rollup кладёт их в charts — и графики грузятся на старте.
+  classnames: ['clsx', 'tailwind-merge', 'class-variance-authority'],
   query: ['@tanstack/react-query', 'axios'],
   ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip', 'vaul', 'cmdk'],
   motion: ['framer-motion'],

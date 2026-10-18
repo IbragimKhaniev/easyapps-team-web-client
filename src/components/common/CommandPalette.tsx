@@ -1,9 +1,10 @@
-import { CornerDownLeft, Plus } from 'lucide-react';
+import { CalendarPlus, CornerDownLeft, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useListTasks } from '@/api/generated/tasks/tasks';
 import { NAV_SECTIONS } from '@/app/navigation';
+import { NEW_POST, PATHS, POST_DATE_PARAM, POST_PARAM } from '@/app/paths';
 import { uiActions, useUiState } from '@/app/uiStore';
 import {
   Command,
@@ -18,6 +19,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { StatusIcon } from '@/features/tasks/components/StatusIcon';
 import { useTaskParam } from '@/features/tasks/hooks/useTaskParam';
 import { useDebounce } from '@/hooks/useDebounce';
+import { todayIso } from '@/lib/dates';
 
 const SEARCH_LIMIT = 8;
 const MIN_QUERY = 2;
@@ -82,6 +84,14 @@ export const CommandPalette = () => {
                 <Plus className="h-[18px] w-[18px] text-brand-800" />
                 <span className="flex-1 font-semibold">Новая задача</span>
                 <kbd className="rounded-md bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-ink-muted">C</kbd>
+              </CommandItem>
+              <CommandItem
+                value="new-post"
+                onSelect={() => run(() => navigate(`${PATHS.media.plan}?${POST_PARAM}=${NEW_POST}&${POST_DATE_PARAM}=${todayIso()}`))}
+                className={itemClass}
+              >
+                <CalendarPlus className="h-[18px] w-[18px] text-brand-800" />
+                <span className="flex-1 font-semibold">Новый пост в контент-план</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator className="my-1" />

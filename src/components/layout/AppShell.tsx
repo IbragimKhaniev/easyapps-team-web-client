@@ -3,6 +3,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { PATHS } from '@/app/paths';
 import { CommandPalette } from '@/components/common/CommandPalette';
 import { Logo } from '@/components/common/Logo';
+import { UploadQueuePanel } from '@/features/media/components/UploadQueuePanel';
+import { PostComposerHost } from '@/features/media/composer/PostComposerHost';
 import { QuickAddTask } from '@/features/tasks/components/QuickAddTask';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
@@ -46,7 +48,7 @@ const Splash = () => (
   </div>
 );
 
-/** Всё за входом: оболочка по ширине экрана и общие слои (карточка, «+», ⌘K). */
+/** Всё за входом: оболочка по ширине экрана и общие слои (карточка задачи, конструктор поста, загрузки, «+», ⌘K). */
 export const AppShell = () => {
   const { user, isLoading } = useSession();
   const isDesktop = useIsDesktop();
@@ -62,6 +64,8 @@ export const AppShell = () => {
     <>
       {isDesktop ? <DesktopShell /> : <MobileShell />}
       <TaskSheet />
+      <PostComposerHost />
+      <UploadQueuePanel />
       <QuickAddTask />
       <CommandPalette />
       {isDesktop && <GlobalShortcuts />}

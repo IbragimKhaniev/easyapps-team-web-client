@@ -11,6 +11,7 @@ import { useMembers, useProjects } from '@/hooks/useDirectory';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useSession } from '@/hooks/useSession';
 import { greeting, todayIso } from '@/lib/dates';
+import { MediaPulseCard } from './widgets/MediaPulseCard';
 import { MyTasksCard } from './widgets/MyTasksCard';
 import { NextUpCard } from './widgets/NextUpCard';
 import { ProgressCard } from './widgets/ProgressCard';
@@ -111,6 +112,9 @@ export const OverviewPage = () => {
             <div className="col-span-6 xl:col-span-3">
               <TodayTile dueToday={overview.counts.dueToday} overdue={overview.counts.overdue} />
             </div>
+            <div className="col-span-12">
+              <MediaPulseCard />
+            </div>
           </div>
         </div>
       ) : (
@@ -119,6 +123,7 @@ export const OverviewPage = () => {
           <div className="flex flex-col gap-4 px-4">
             <MyTasksCard tasks={overview.myTasks} />
             <TodayTile dueToday={overview.counts.dueToday} overdue={overview.counts.overdue} />
+            <MediaPulseCard />
             <WeekChartCard days={overview.days} today={overview.today} doneThisWeek={overview.counts.doneThisWeek} />
             <ProgressCard byStatus={overview.byStatus} />
             <TeamCard members={members} workload={overview.workload} />

@@ -22,5 +22,13 @@ export const PATHS = {
  */
 export const TASK_PARAM = 'task';
 
+/** Конструктор поста поверх экрана: `?post=<id>` или `?post=new&date=YYYY-MM-DD`. */
+export const POST_PARAM = 'post';
+export const POST_DATE_PARAM = 'date';
+export const NEW_POST = 'new';
+
+/** Пост контент-плана по ссылке — открывается поверх календаря. */
+export const postHref = (id: string): string => `${PATHS.media.plan}?${POST_PARAM}=${encodeURIComponent(id)}`;
+
 /** Прямая ссылка на задачу: `/tasks/EA-42` перенаправляется на список с открытой карточкой. */
 export const taskHref = (key: string): string => `${PATHS.tasks}/${encodeURIComponent(key)}`;
