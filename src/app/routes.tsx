@@ -1,0 +1,53 @@
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
+
+import { AppShell } from '@/components/layout/AppShell';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { PATHS } from './paths';
+
+/**
+ * Страницы грузятся лениво: на телефон не приходит код доски и графиков,
+ * пока их не открыли.
+ */
+const lazyPage = <T extends Record<string, ComponentType>>(load: () => Promise<T>, name: keyof T) =>
+  lazy(async () => ({ default: (await load())[name] }));
+
+const OverviewPage = lazyPage(() => import('@/features/overview/OverviewPage'), 'OverviewPage');
+const MyTasksPage = lazyPage(() => import('@/features/tasks/pages/MyTasksPage'), 'MyTasksPage');
+const TasksPage = lazyPage(() => import('@/features/tasks/pages/TasksPage'), 'TasksPage');
+const TaskRedirect = lazyPage(() => import('@/features/tasks/pages/TaskRedirect'), 'TaskRedirect');
+const SettingsPage = lazyPage(() => import('@/features/settings/SettingsPage'), 'SettingsPage');
+const MorePage = lazyPage(() => import('@/features/more/MorePage'), 'MorePage');
+const ContentPlanPage = lazyPage(() => import('@/features/media/plan/ContentPlanPage'), 'ContentPlanPage');
+const MediaLibraryPage = lazyPage(() => import('@/features/media/library/MediaLibraryPage'), 'MediaLibraryPage');
+const FeedPage = lazyPage(() => import('@/features/media/feed/FeedPage'), 'FeedPage');
+const AnalyticsPage = lazyPage(() => import('@/features/media/analytics/AnalyticsPage'), 'AnalyticsPage');
+const MediaSettingsPage = lazyPage(() => import('@/features/media/settings/MediaSettingsPage'), 'MediaSettingsPage');
+
+const PageFallback = () => <div className="skeleton m-4 h-48 rounded-card lg:m-0" />;
+
+const page = (element: ReactNode) => <Suspense fallback={<PageFallback />}>{element}</Suspense>;
+
+const routes: RouteObject[] = [
+  { path: PATHS.login, element: <LoginPage /> },
+  {
+    element: <AppShell />,
+    children: [
+      { index: true, element: page(<OverviewPage />) },
+      { path: PATHS.myTasks, element: page(<MyTasksPage />) },
+      { path: PATHS.tasks, element: page(<TasksPage />) },
+      { path: `${PATHS.tasks}/:key`, element: page(<TaskRedirect />) },
+      { path: PATHS.settings, element: page(<SettingsPage />) },
+      { path: PATHS.more, element: page(<MorePage />) },
+      { path: PATHS.media.root, element: <Navigate to={PATHS.media.plan} replace /> },
+      { path: PATHS.media.plan, element: page(<ContentPlanPage />) },
+      { path: PATHS.media.library, element: page(<MediaLibraryPage />) },
+      { path: PATHS.media.feed, element: page(<FeedPage />) },
+      { path: PATHS.media.analytics, element: page(<AnalyticsPage />) },
+      { path: PATHS.media.settings, element: page(<MediaSettingsPage />) },
+      { path: '*', element: <Navigate to={PATHS.overview} replace /> },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(routes);

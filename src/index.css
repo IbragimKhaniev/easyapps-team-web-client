@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Токены — светлая тема в духе референса №17 (Donezo) в цветах easyapps.
+ * Тёмной темы нет сознательно: референс светлый, а полутёмная тема хуже,
+ * чем никакой. Цвета — в HSL, как ждут компоненты shadcn.
+ */
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Холст за окном приложения и панели внутри него */
+    --canvas: 216 22% 95%;
+    --panel: 220 20% 97%;
+
+    --background: 0 0% 100%;
+    --foreground: 221 39% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 221 39% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 39% 11%;
+
+    /* Основная кнопка — глубокий фирменный голубой: белый текст читается */
+    --primary: 197 86% 31%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 96%;
+    --secondary-foreground: 221 39% 11%;
+
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 197 91% 95%;
+    --accent-foreground: 197 86% 31%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 18% 91%;
+    --input: 220 18% 89%;
+    --ring: 197 91% 60%;
+
+    --radius: 0.875rem;
+
+    /* Отступы под чёлку и индикатор «домой» на iPhone */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --tabbar-height: 64px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    /* Без «резинки» у всей страницы — прокручиваются только области внутри */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Поля ≥ 16px на телефоне: иначе Safari зумит страницу при фокусе */
+  @media (max-width: 767px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  button,
+  a,
+  [role='button'] {
+    touch-action: manipulation;
+  }
+
+  ::selection {
+    background: hsl(197 91% 60% / 0.25);
+  }
+}
+
+@layer components {
+  /* Белая карточка — основной строительный блок экрана */
+  .card-surface {
+    @apply rounded-card bg-card shadow-card;
+  }
+
+  /* Залитая фирменная плитка — «главная» в ряду, как в референсе */
+  .tile-brand {
+    background-image:
+      radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.22) 0%, transparent 46%),
+      linear-gradient(135deg, #0b6a92 0%, #1293cf 55%, #3cc1f6 100%);
+    @apply text-white;
+  }
+
+  /* Тёмная плитка с «волнами» — промо и таймер в референсе */
+  .tile-deep {
+    background-color: #083a51;
+    background-image:
+      radial-gradient(90% 80% at 85% 110%, rgba(60, 193, 246, 0.55) 0%, transparent 60%),
+      radial-gradient(60% 60% at 10% -10%, rgba(60, 193, 246, 0.28) 0%, transparent 70%),
+      repeating-radial-gradient(circle at 110% 120%, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 22px);
+    @apply text-white;
+  }
+
+  /* Штриховка — «ещё впереди / в ожидании» на графиках */
+  .bg-hatched {
+    background-color: #f3f6f8;
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(11, 106, 146, 0.38) 0 2.5px,
+      transparent 2.5px 8px
+    );
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Цифры одной ширины — в счётчиках и временах */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pt-safe {
+    padding-top: var(--safe-top);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Стекло — только для хрома (таббар, шапка), не для данных */
+  .glass {
+    @apply bg-white/75 backdrop-blur-xl backdrop-saturate-150;
+  }
+
+  .skeleton {
+    @apply animate-shimmer rounded-md;
+    background: linear-gradient(90deg, #eef1f4 25%, #f6f8fa 37%, #eef1f4 63%);
+    background-size: 400% 100%;
+  }
+}
