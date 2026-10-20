@@ -1,5 +1,5 @@
 <!-- map-covers: src -->
-<!-- map-base: 6c50b3a -->
+<!-- map-base: 28ba5a7 -->
 
 # Карта: фронт team.easyapps.click
 
@@ -24,7 +24,7 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Клиент API | `api/http.ts` (мутатор orval), `api/generated`, `api/models` — генерируются | руками не править; `npm run api` |
 | Токены дизайна | `tailwind.config.ts`, `index.css` (`card-surface`, `tile-brand`, `tile-deep`, `bg-hatched`) | цвета — шкала `brand` вокруг `#3CC1F6` |
 | Общие компоненты | `components/common` — `Card`, `KpiCard`, `SegmentedControl`, `AdaptivePicker`, `ResponsiveDialog`, `EmptyState` | выбор и окна, родные на обоих экранах |
-| Трекер | `features/tasks` (страницы, карточка `TaskSheet`, доска, пикеры, кэш `lib/cache.ts`) | оптимистичные правки во всех списках |
+| Трекер | `features/tasks` (страницы, карточка `TaskSheet` → лениво `detail/TaskDetail` со скелетоном `TaskDetailSkeleton`, доска, пикеры, кэш `lib/cache.ts`) | оптимистичные правки во всех списках |
 | Сводка | `features/overview` (+ `widgets/MediaPulseCard` — ближайшая публикация) | |
 | Медиа: общее | `features/media/lib` — `platforms`, `status`, `format`, `markup`, `rules`, `calendar`, `cache`, `chartTheme`; `features/media/components` | разметка и лимиты — зеркало сервера |
 | Контент-план | `features/media/plan` — `ContentPlanPage`, `MonthGrid` (перетаскивание по дням), `DayPanel`, `CompactMonth` (телефон) | месяц/день/площадка — в адресе |
@@ -50,6 +50,11 @@ API — `team-api` из `easyapps-web-server` (его карта —
   странице). Ссылку можно переслать, «назад» закрывает слой. Окно грузит по
   `useLastPresent(id)` — пока оно закрывается, id в адресе уже пуст, а запись
   должна остаться на месте, иначе мелькает «не найдена».
+- **Код слоя — лениво, только когда параметр есть.** `PostComposerHost` и
+  `WorkHost` возвращают `null` без параметра и грузят лист по `React.lazy`.
+  `TaskSheet` иначе: оболочка (панель с пружиной и Esc, шторка vaul) в стартовом
+  коде — хост, вернувший `null`, оборвал бы анимацию закрытия, — а лениво только
+  `TaskDetail`; пока он грузится, на его месте `TaskDetailSkeleton`.
 - **Телефон/компьютер** — `useIsDesktop()` (≥1024px): на компьютере диалоги и
   поповеры, на телефоне шторки vaul (`ResponsiveDialog`, `AdaptivePicker`).
 - **Загрузка файла** — `uploadQueue.add`: браузер снимает размеры и кадр видео
@@ -68,10 +73,14 @@ API — `team-api` из `easyapps-web-server` (его карта —
   (`features/knowledge/lib/knowledgeMeta.ts`) ↔ `KNOWLEDGE_SECTION_ICONS`
   (team-api `constants/knowledge.ts`). Нет иконки во фронте — раздел покажется
   книгой.
-- **recharts и dnd-kit не в стартовом графе.** Проверка — в `dist/index.html`
-  после `npm run build` нет `modulepreload` на `charts-*` и `dnd-*`. Утилиты
-  классов — в своём чанке `classnames` (`vite.config.ts`), иначе rollup кладёт
-  `clsx` в чанк графиков и тянет его на старте.
+- **recharts, dnd-kit и markdown не в стартовом графе.** Проверка — в
+  `dist/index.html` после `npm run build` нет `modulepreload` на `charts-*`,
+  `dnd-*` и `markdown-*`. Markdown (`components/common/Markdown`, ~160 КБ)
+  приходит только с карточкой задачи и страницей базы знаний: статический
+  импорт `Markdown`, `TaskDetail` или их потребителей из `AppShell` и его слоёв
+  вернёт его на старт каждого телефона. Утилиты классов — в своём чанке
+  `classnames` (`vite.config.ts`), иначе rollup кладёт `clsx` в чанк графиков и
+  тянет его на старте.
 
 ## Куда добавлять новое
 
