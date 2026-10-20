@@ -292,9 +292,10 @@
           "question",
           "note",
           "task",
-          "knowledge"
+          "knowledge",
+          "pipeline"
         ],
-        "description": "prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,\nresult, problem (минус), win (плюс), question, note — пишет агент; task —\nправка трекера или контент-плана через агента; knowledge — занесено в базу знаний\n"
+        "description": "prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,\nresult, problem (минус), win (плюс), question, note — пишет агент; task —\nправка трекера или контент-плана через агента; knowledge — занесено в базу знаний;\npipeline — правка конвейера роликов через агента\n"
       },
       "JournalEntrySource": {
         "type": "string",
@@ -317,7 +318,8 @@
           "questions",
           "notes",
           "tasks",
-          "knowledge"
+          "knowledge",
+          "pipeline"
         ],
         "properties": {
           "prompts": {
@@ -351,6 +353,9 @@
             "type": "integer"
           },
           "knowledge": {
+            "type": "integer"
+          },
+          "pipeline": {
             "type": "integer"
           }
         }
@@ -3287,6 +3292,1499 @@
           }
         }
       },
+      "PipelineActor": {
+        "type": "string",
+        "enum": [
+          "people",
+          "agent"
+        ],
+        "description": "people — человек в дашборде, agent — агент через MCP или утилиту"
+      },
+      "PipelineCellStatus": {
+        "type": "string",
+        "enum": [
+          "todo",
+          "progress",
+          "done",
+          "rejected"
+        ],
+        "description": "done ставится сам, когда в клетке есть клип"
+      },
+      "PipelineVideoStatus": {
+        "type": "string",
+        "enum": [
+          "idea",
+          "script",
+          "build",
+          "review",
+          "changes",
+          "approved",
+          "published"
+        ]
+      },
+      "PipelineProject": {
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "videoPrefix",
+          "videoSeq",
+          "createdAt"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "videoPrefix": {
+            "type": "string"
+          },
+          "videoSeq": {
+            "type": "integer",
+            "description": "Последний выданный номер ролика"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PipelineProjectListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineProject"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PipelineProjectResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineProject"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "CreatePipelineProjectInput": {
+        "type": "object",
+        "required": [
+          "key",
+          "title"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Латиница, цифры и дефис"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelinePhase": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "done, active, todo"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineNextMove": {
+        "type": "object",
+        "required": [
+          "who",
+          "text"
+        ],
+        "properties": {
+          "who": {
+            "$ref": "#/components/schemas/PipelineActor"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineMeta": {
+        "type": "object",
+        "required": [
+          "title",
+          "audience",
+          "phases",
+          "next"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelinePhase"
+            }
+          },
+          "next": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineNextMove"
+            }
+          }
+        }
+      },
+      "PipelineHeroApp": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "result_url": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineHeroData": {
+        "type": "object",
+        "description": "Герой в формате папки конвейера (cast.json → heroes[]); остальные поля — как пришли",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "age": {
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "profession": {
+            "type": "string"
+          },
+          "business": {
+            "type": "string"
+          },
+          "look_ru": {
+            "type": "string"
+          },
+          "place_ru": {
+            "type": "string"
+          },
+          "look": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "work": {
+            "type": "string"
+          },
+          "personality": {
+            "type": "string"
+          },
+          "pains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "app": {
+            "$ref": "#/components/schemas/PipelineHeroApp"
+          },
+          "line": {
+            "type": "string"
+          },
+          "sheet_job": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineCharacter": {
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "data",
+          "isMain",
+          "sceneGroup",
+          "sheet",
+          "sheetPrompt",
+          "revision"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineHeroData"
+          },
+          "isMain": {
+            "type": "boolean"
+          },
+          "sceneGroup": {
+            "type": "string",
+            "description": "Какие сцены подходят герою (hero, family, client или id героя)"
+          },
+          "sheet": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ссылка на лист персонажа"
+          },
+          "sheetPrompt": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          }
+        }
+      },
+      "PipelineBeatData": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "who": {
+            "type": "string"
+          },
+          "ru": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "motion": {
+            "type": "string"
+          },
+          "framing": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineScene": {
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "who",
+          "data"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "who": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineBeatData"
+          }
+        }
+      },
+      "PipelineFormat": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "seconds": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "actors": {
+            "type": "boolean"
+          },
+          "idea": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "PipelineHook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "example": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineCellPrompts": {
+        "type": "object",
+        "required": [
+          "image",
+          "motion"
+        ],
+        "properties": {
+          "image": {
+            "type": "string"
+          },
+          "motion": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineCell": {
+        "type": "object",
+        "required": [
+          "key",
+          "character",
+          "scene",
+          "status",
+          "note",
+          "clip",
+          "frame",
+          "prompts",
+          "sharedFrom",
+          "usedIn",
+          "higgsfield",
+          "updatedAt"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "«герой/сцена»"
+          },
+          "character": {
+            "type": "string"
+          },
+          "scene": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PipelineCellStatus"
+          },
+          "note": {
+            "type": "string"
+          },
+          "clip": {
+            "type": "string",
+            "nullable": true
+          },
+          "frame": {
+            "type": "string",
+            "nullable": true
+          },
+          "prompts": {
+            "$ref": "#/components/schemas/PipelineCellPrompts"
+          },
+          "sharedFrom": {
+            "type": "string",
+            "nullable": true
+          },
+          "usedIn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Номера роликов, где клип уже стоит"
+          },
+          "higgsfield": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PipelineVariant": {
+        "type": "object",
+        "required": [
+          "name",
+          "title",
+          "captions",
+          "file",
+          "cover"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "captions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "file": {
+            "type": "string"
+          },
+          "cover": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PipelineReview": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineVideo": {
+        "type": "object",
+        "required": [
+          "number",
+          "status",
+          "format",
+          "hero",
+          "cast",
+          "idea",
+          "hook",
+          "altHooks",
+          "cta",
+          "timeline",
+          "file",
+          "cover",
+          "variants",
+          "seconds",
+          "review",
+          "qaFailed",
+          "revision",
+          "updatedAt",
+          "updatedVia"
+        ],
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "idea, script, build, review, changes, approved, published"
+          },
+          "format": {
+            "type": "string",
+            "nullable": true
+          },
+          "hero": {
+            "type": "string",
+            "nullable": true
+          },
+          "cast": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "idea": {
+            "type": "string"
+          },
+          "hook": {
+            "type": "string"
+          },
+          "altHooks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cta": {
+            "type": "string"
+          },
+          "timeline": {
+            "type": "array",
+            "description": "[сцена, секунды, заметка]",
+            "items": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          },
+          "file": {
+            "type": "string",
+            "nullable": true
+          },
+          "cover": {
+            "type": "string",
+            "nullable": true
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineVariant"
+            }
+          },
+          "seconds": {
+            "type": "number",
+            "nullable": true
+          },
+          "review": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PipelineReview"
+              }
+            ],
+            "nullable": true
+          },
+          "qaFailed": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedVia": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PipelineEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "who",
+          "userId",
+          "client",
+          "text",
+          "ref",
+          "at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "who": {
+            "$ref": "#/components/schemas/PipelineActor"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "client": {
+            "type": "string",
+            "nullable": true
+          },
+          "text": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string",
+            "nullable": true,
+            "description": "video:R-014, cell:artem/b01, character:artem"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PipelineStateProject": {
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "videoPrefix"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "videoPrefix": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineState": {
+        "type": "object",
+        "required": [
+          "project",
+          "meta",
+          "spec",
+          "characters",
+          "scenes",
+          "formats",
+          "hooks",
+          "cells",
+          "videos",
+          "events",
+          "storage",
+          "generatedAt"
+        ],
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/PipelineStateProject"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PipelineMeta"
+          },
+          "spec": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Параметры клипа (aspect, seconds, image_model, video_model, sound)"
+          },
+          "characters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineCharacter"
+            }
+          },
+          "scenes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineScene"
+            }
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineFormat"
+            }
+          },
+          "hooks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineHook"
+            }
+          },
+          "cells": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineCell"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineVideo"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineEvent"
+            }
+          },
+          "storage": {
+            "type": "boolean",
+            "description": "Хранилище файлов настроено"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PipelineStateResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineState"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PipelineEventListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineEvent"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PipelineEventResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineEvent"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AddPipelineEventInput": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          }
+        }
+      },
+      "SetPipelineNextInput": {
+        "type": "object",
+        "required": [
+          "moves"
+        ],
+        "properties": {
+          "moves": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineNextMove"
+            }
+          }
+        }
+      },
+      "PipelineOkResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "ok"
+            ],
+            "properties": {
+              "ok": {
+                "type": "boolean"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "UpdatePipelineCellInput": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "progress",
+              "rejected"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "PipelineItem": {
+        "type": "object",
+        "required": [
+          "key",
+          "revision",
+          "data"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "PipelineItemResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineItem"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PipelineVideoDetail": {
+        "type": "object",
+        "required": [
+          "number",
+          "revision",
+          "data",
+          "updatedAt"
+        ],
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Сценарий ролика целиком (videos/R-xxx.json)"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PipelineVideoDetailResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineVideoDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "PipelineVideoStatusResult": {
+        "type": "object",
+        "required": [
+          "number",
+          "revision",
+          "status"
+        ],
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PipelineVideoStatusResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PipelineVideoStatusResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "SetPipelineVideoStatusInput": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PipelineVideoStatus"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewPipelineVideoInput": {
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "changes"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "description": "Для changes — обязательно"
+          }
+        }
+      },
+      "UpdatePipelineCharacterInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "age": {
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "profession": {
+            "type": "string"
+          },
+          "business": {
+            "type": "string"
+          },
+          "look_ru": {
+            "type": "string"
+          },
+          "place_ru": {
+            "type": "string"
+          },
+          "look": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "work": {
+            "type": "string"
+          },
+          "personality": {
+            "type": "string"
+          },
+          "line": {
+            "type": "string"
+          },
+          "pains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PipelineFileEntry": {
+        "type": "object",
+        "required": [
+          "path",
+          "size",
+          "contentType",
+          "updatedAt"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "etag": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PipelineFileResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PipelineFileEntry"
+              }
+            ],
+            "nullable": true
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "UploadPipelineFileInput": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "HiggsfieldStatus": {
+        "type": "string",
+        "enum": [
+          "disconnected",
+          "pending",
+          "connected",
+          "error"
+        ]
+      },
+      "HiggsfieldToolAccess": {
+        "type": "string",
+        "enum": [
+          "allowed",
+          "adminAllowed",
+          "adminDenied",
+          "blocked",
+          "unknown"
+        ],
+        "description": "allowed — открыт по умолчанию, adminAllowed — открыл админ, adminDenied — закрыл админ,\nblocked — опасное (удаление, оплата, публикация), unknown — новый, закрыт до решения админа\n"
+      },
+      "HiggsfieldTool": {
+        "type": "object",
+        "required": [
+          "name",
+          "title",
+          "description",
+          "access"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string"
+          },
+          "access": {
+            "$ref": "#/components/schemas/HiggsfieldToolAccess"
+          }
+        }
+      },
+      "HiggsfieldPolicy": {
+        "type": "object",
+        "required": [
+          "enabled",
+          "allow",
+          "deny"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "allow": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deny": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "HiggsfieldAccount": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "HiggsfieldBalance": {
+        "type": "object",
+        "required": [
+          "credits",
+          "plan",
+          "checkedAt"
+        ],
+        "properties": {
+          "credits": {
+            "type": "number",
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HiggsfieldUsageRow": {
+        "type": "object",
+        "required": [
+          "userId",
+          "calls",
+          "generations"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "calls": {
+            "type": "integer"
+          },
+          "generations": {
+            "type": "integer"
+          }
+        }
+      },
+      "HiggsfieldCall": {
+        "type": "object",
+        "required": [
+          "at",
+          "userId",
+          "client",
+          "tool",
+          "model",
+          "ok",
+          "costOnly",
+          "jobIds",
+          "error"
+        ],
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "nullable": true
+          },
+          "tool": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "costOnly": {
+            "type": "boolean"
+          },
+          "jobIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HiggsfieldUsage": {
+        "type": "object",
+        "required": [
+          "byPerson",
+          "recent"
+        ],
+        "properties": {
+          "byPerson": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HiggsfieldUsageRow"
+            }
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HiggsfieldCall"
+            }
+          }
+        }
+      },
+      "HiggsfieldState": {
+        "type": "object",
+        "required": [
+          "status",
+          "account",
+          "connectedAt",
+          "connectedBy",
+          "lastError",
+          "lastUsedAt",
+          "balance",
+          "canStoreSecrets",
+          "policy",
+          "tools",
+          "toolsFetchedAt",
+          "usage"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/HiggsfieldStatus"
+          },
+          "account": {
+            "$ref": "#/components/schemas/HiggsfieldAccount"
+          },
+          "connectedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "connectedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "balance": {
+            "$ref": "#/components/schemas/HiggsfieldBalance"
+          },
+          "canStoreSecrets": {
+            "type": "boolean"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/HiggsfieldPolicy"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HiggsfieldTool"
+            }
+          },
+          "toolsFetchedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "usage": {
+            "$ref": "#/components/schemas/HiggsfieldUsage"
+          }
+        }
+      },
+      "HiggsfieldStateResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HiggsfieldState"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "HiggsfieldConnectResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "authorizationUrl"
+            ],
+            "properties": {
+              "authorizationUrl": {
+                "type": "string"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "UpdateHiggsfieldPolicyInput": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "allow": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deny": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "TeamRole": {
         "type": "string",
         "enum": [
@@ -4645,6 +6143,24 @@
         "required": true,
         "schema": {
           "$ref": "#/components/schemas/SocialPlatform"
+        }
+      },
+      "PipelineProjectKey": {
+        "name": "project",
+        "in": "path",
+        "required": true,
+        "description": "Ключ конвейера",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PipelineVideoNumber": {
+        "name": "number",
+        "in": "path",
+        "required": true,
+        "description": "Номер ролика, R-001",
+        "schema": {
+          "type": "string"
         }
       }
     }
@@ -6601,6 +8117,671 @@
           },
           "400": {
             "$ref": "#/components/responses/ValidationFailed"
+          }
+        }
+      }
+    },
+    "/pipeline/projects": {
+      "get": {
+        "operationId": "listPipelineProjects",
+        "summary": "Конвейеры",
+        "tags": [
+          "Pipeline"
+        ],
+        "responses": {
+          "200": {
+            "description": "Конвейеры",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineProjectListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPipelineProject",
+        "summary": "Новый конвейер (admin)",
+        "tags": [
+          "Pipeline"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePipelineProjectInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Конвейер создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineProjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/state": {
+      "get": {
+        "operationId": "getPipelineState",
+        "summary": "Всё для дашборда конвейера",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Каст, сцены, клетки библиотеки, ролики, журнал",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/events": {
+      "get": {
+        "operationId": "listPipelineEvents",
+        "summary": "Журнал конвейера страницами",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Раньше этого момента — следующая страница",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ref",
+            "in": "query",
+            "description": "video:R-014, cell:artem/b01, character:artem",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Записи журнала",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineEventListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addPipelineEvent",
+        "summary": "Запись людей в журнал",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPipelineEventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Запись",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineEventResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/next": {
+      "put": {
+        "operationId": "setPipelineNext",
+        "summary": "«Ваш ход / ход агента»",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPipelineNextInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сохранено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineOkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/cells/{character}/{scene}": {
+      "patch": {
+        "operationId": "updatePipelineCell",
+        "summary": "Статус и заметка клетки библиотеки",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "name": "character",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scene",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePipelineCellInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Клетка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineItemResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/videos/{number}": {
+      "get": {
+        "operationId": "getPipelineVideo",
+        "summary": "Сценарий ролика целиком",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "$ref": "#/components/parameters/PipelineVideoNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ролик",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineVideoDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "setPipelineVideoStatus",
+        "summary": "Статус ролика",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "$ref": "#/components/parameters/PipelineVideoNumber"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPipelineVideoStatusInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Статус",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineVideoStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/videos/{number}/review": {
+      "post": {
+        "operationId": "reviewPipelineVideo",
+        "summary": "«Одобрить» или «Нужны правки»",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "$ref": "#/components/parameters/PipelineVideoNumber"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPipelineVideoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Решение записано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineVideoStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/characters/{key}": {
+      "patch": {
+        "operationId": "updatePipelineCharacter",
+        "summary": "Правка героя",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePipelineCharacterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Герой",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineItemResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/pipeline/projects/{project}/upload": {
+      "post": {
+        "operationId": "uploadPipelineFile",
+        "summary": "Клип или кадр клетки, лист героя",
+        "description": "Путь в хранилище считает сервер по цели — клип делает клетку «готов»",
+        "tags": [
+          "Pipeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PipelineProjectKey"
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "clip",
+                "frame",
+                "sheet"
+              ]
+            }
+          },
+          {
+            "name": "character",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scene",
+            "in": "query",
+            "description": "Для клипа и кадра",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadPipelineFileInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Файл сохранён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/higgsfield": {
+      "get": {
+        "operationId": "getHiggsfieldState",
+        "summary": "Подключение, баланс, инструменты, кто сколько генерировал",
+        "tags": [
+          "Higgsfield"
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiggsfieldStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/higgsfield/connect": {
+      "post": {
+        "operationId": "connectHiggsfield",
+        "summary": "Ссылка на вход в Higgsfield (admin)",
+        "tags": [
+          "Higgsfield"
+        ],
+        "responses": {
+          "200": {
+            "description": "Куда отправить админа",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiggsfieldConnectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/higgsfield/disconnect": {
+      "post": {
+        "operationId": "disconnectHiggsfield",
+        "summary": "Отключить общий аккаунт (admin)",
+        "tags": [
+          "Higgsfield"
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiggsfieldStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/higgsfield/policy": {
+      "patch": {
+        "operationId": "updateHiggsfieldPolicy",
+        "summary": "Доступ команды — рубильник и инструменты (admin)",
+        "tags": [
+          "Higgsfield"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHiggsfieldPolicyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Состояние",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiggsfieldStateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/higgsfield/refresh": {
+      "post": {
+        "operationId": "refreshHiggsfield",
+        "summary": "Перечитать каталог и баланс (admin)",
+        "tags": [
+          "Higgsfield"
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiggsfieldStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }

@@ -25,4 +25,5 @@ export interface JournalCounts {
   notes: number;
   tasks: number;
   knowledge: number;
+  pipeline: number;
 }
