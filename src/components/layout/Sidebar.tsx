@@ -15,7 +15,7 @@ const NavItem = ({ item, badge }: { item: INavItem; badge?: number }) => (
     end={item.end}
     className={({ isActive }) =>
       cn(
-        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
+        'group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[15px] transition-colors',
         isActive ? 'font-bold text-ink' : 'font-medium text-ink-muted hover:bg-white/70 hover:text-ink',
       )
     }
@@ -51,7 +51,7 @@ export const Sidebar = () => {
     <aside className="flex h-full w-[264px] shrink-0 flex-col rounded-card bg-panel px-5 pb-5 pt-6">
       <Logo className="px-1" />
 
-      <nav className="mt-9 flex flex-1 flex-col gap-7 overflow-y-auto scrollbar-none">
+      <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto scrollbar-none">
         {NAV_SECTIONS.map((section) => (
           <div key={section.title}>
             <div className="mb-2 px-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
@@ -67,15 +67,16 @@ export const Sidebar = () => {
         <button
           type="button"
           onClick={logout}
-          className="-mt-5 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-ink-muted transition-colors hover:bg-white/70 hover:text-ink"
+          className="-mt-3 flex items-center gap-3 rounded-xl px-3 py-2 text-[15px] font-medium text-ink-muted transition-colors hover:bg-white/70 hover:text-ink"
         >
           <LogOut className="h-5 w-5 text-ink-faint" />
           Выйти
         </button>
       </nav>
 
-      {/* Тёмная плитка внизу — как «Download our Mobile App» в референсе */}
-      <div className="tile-deep mt-4 rounded-2xl p-4">
+      {/* Тёмная плитка внизу — как «Download our Mobile App» в референсе. На невысоком
+          экране прячется: разделов стало четыре, и плитка закрывала бы пункты меню. */}
+      <div className="tile-deep mt-4 hidden rounded-2xl p-4 [@media(min-height:1000px)]:block">
         <Smartphone className="h-6 w-6 text-brand-300" />
         <div className="mt-3 text-[17px] font-bold leading-tight">team на iPhone</div>
         <p className="mt-1 text-xs leading-relaxed text-white/70">Как приложение: с иконкой и без адресной строки</p>

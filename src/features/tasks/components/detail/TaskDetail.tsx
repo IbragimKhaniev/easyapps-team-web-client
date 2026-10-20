@@ -18,6 +18,7 @@ import { timeAgo } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 import { useTaskActions } from '../../hooks/useTaskActions';
 import { useTaskRowContext } from '../../hooks/useTaskRowContext';
+import { useTaskWorkCount } from '../../hooks/useTaskWorkCount';
 import { ProjectBadge } from '../ProjectBadge';
 import { TaskChecklist } from './TaskChecklist';
 import { TaskComments } from './TaskComments';
@@ -25,6 +26,7 @@ import { TaskDescription } from './TaskDescription';
 import { TaskHistory } from './TaskHistory';
 import { TaskProperties } from './TaskProperties';
 import { TaskTitle } from './TaskTitle';
+import { TaskWork } from './TaskWork';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="flex flex-col gap-2.5">
@@ -45,6 +47,7 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
   const { updateTask, restoreTask } = useTaskActions();
   const [tab, setTab] = useState('comments');
   const task = data?.data;
+  const workCount = useTaskWorkCount(taskKey);
 
   if (isLoading) {
     return (
@@ -123,6 +126,7 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
           <TabsList className="h-10 w-full justify-start gap-1 rounded-full bg-secondary p-1">
             {[
               { value: 'comments', label: `Комментарии${task.commentsCount ? ` · ${task.commentsCount}` : ''}` },
+              { value: 'work', label: `Агенты${workCount ? ` · ${workCount}` : ''}` },
               { value: 'history', label: 'История' },
             ].map((item) => (
               <TabsTrigger
@@ -136,6 +140,9 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
           </TabsList>
           <TabsContent value="comments" className="mt-4">
             <TaskComments taskKey={task.key} />
+          </TabsContent>
+          <TabsContent value="work" className="mt-4">
+            <TaskWork taskKey={task.key} />
           </TabsContent>
           <TabsContent value="history" className="mt-4">
             <TaskHistory taskKey={task.key} />

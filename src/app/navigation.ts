@@ -1,11 +1,14 @@
 import {
   BarChart3,
+  Bot,
   CalendarDays,
   CircleCheckBig,
   Images,
   LayoutGrid,
   ListTodo,
   Newspaper,
+  NotebookPen,
+  Scale,
   Settings,
   SlidersHorizontal,
   type LucideIcon,
@@ -45,6 +48,14 @@ export const NAV_SECTIONS: INavSection[] = [
       { to: PATHS.media.library, label: 'Медиатека', icon: Images },
       { to: PATHS.media.feed, label: 'Лента', icon: Newspaper },
       { to: PATHS.media.analytics, label: 'Аналитика', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Агенты',
+    items: [
+      { to: PATHS.journal, label: 'Журнал работы', icon: NotebookPen, end: true },
+      { to: PATHS.journalReview, label: 'Разбор', icon: Scale },
+      { to: PATHS.agents, label: 'Подключить агента', icon: Bot },
     ],
   },
   {

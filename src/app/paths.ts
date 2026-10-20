@@ -6,6 +6,9 @@ export const PATHS = {
   tasks: '/tasks',
   settings: '/settings',
   more: '/more',
+  journal: '/journal',
+  journalReview: '/journal/review',
+  agents: '/agents',
   media: {
     root: '/media',
     plan: '/media/plan',
@@ -32,3 +35,9 @@ export const postHref = (id: string): string => `${PATHS.media.plan}?${POST_PARA
 
 /** Прямая ссылка на задачу: `/tasks/EA-42` перенаправляется на список с открытой карточкой. */
 export const taskHref = (key: string): string => `${PATHS.tasks}/${encodeURIComponent(key)}`;
+
+/** Работа журнала поверх любого экрана: `?work=<id>` — ход работы целиком. */
+export const WORK_PARAM = 'work';
+
+/** Ссылка на работу журнала: открывается поверх ленты журнала. */
+export const workHref = (id: string): string => `${PATHS.journal}?${WORK_PARAM}=${encodeURIComponent(id)}`;

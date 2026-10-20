@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { PATHS } from '@/app/paths';
 import { CommandPalette } from '@/components/common/CommandPalette';
 import { Logo } from '@/components/common/Logo';
+import { WorkHost } from '@/features/agents/components/WorkHost';
 import { UploadQueuePanel } from '@/features/media/components/UploadQueuePanel';
 import { PostComposerHost } from '@/features/media/composer/PostComposerHost';
 import { QuickAddTask } from '@/features/tasks/components/QuickAddTask';
@@ -48,7 +49,7 @@ const Splash = () => (
   </div>
 );
 
-/** Всё за входом: оболочка по ширине экрана и общие слои (карточка задачи, конструктор поста, загрузки, «+», ⌘K). */
+/** Всё за входом: оболочка по ширине экрана и общие слои (карточка задачи, конструктор поста, работа журнала, загрузки, «+», ⌘K). */
 export const AppShell = () => {
   const { user, isLoading } = useSession();
   const isDesktop = useIsDesktop();
@@ -65,6 +66,7 @@ export const AppShell = () => {
       {isDesktop ? <DesktopShell /> : <MobileShell />}
       <TaskSheet />
       <PostComposerHost />
+      <WorkHost />
       <UploadQueuePanel />
       <QuickAddTask />
       <CommandPalette />

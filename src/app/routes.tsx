@@ -23,6 +23,9 @@ const MediaLibraryPage = lazyPage(() => import('@/features/media/library/MediaLi
 const FeedPage = lazyPage(() => import('@/features/media/feed/FeedPage'), 'FeedPage');
 const AnalyticsPage = lazyPage(() => import('@/features/media/analytics/AnalyticsPage'), 'AnalyticsPage');
 const MediaSettingsPage = lazyPage(() => import('@/features/media/settings/MediaSettingsPage'), 'MediaSettingsPage');
+const JournalPage = lazyPage(() => import('@/features/agents/journal/JournalPage'), 'JournalPage');
+const JournalReviewPage = lazyPage(() => import('@/features/agents/review/JournalReviewPage'), 'JournalReviewPage');
+const AgentsPage = lazyPage(() => import('@/features/agents/connect/AgentsPage'), 'AgentsPage');
 
 const PageFallback = () => <div className="skeleton m-4 h-48 rounded-card lg:m-0" />;
 
@@ -45,6 +48,9 @@ const routes: RouteObject[] = [
       { path: PATHS.media.feed, element: page(<FeedPage />) },
       { path: PATHS.media.analytics, element: page(<AnalyticsPage />) },
       { path: PATHS.media.settings, element: page(<MediaSettingsPage />) },
+      { path: PATHS.journal, element: page(<JournalPage />) },
+      { path: PATHS.journalReview, element: page(<JournalReviewPage />) },
+      { path: PATHS.agents, element: page(<AgentsPage />) },
       { path: '*', element: <Navigate to={PATHS.overview} replace /> },
     ],
   },

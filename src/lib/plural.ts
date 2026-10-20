@@ -18,3 +18,6 @@ export const COMMENT_FORMS = ['комментарий', 'комментария'
 export const DAY_FORMS = ['день', 'дня', 'дней'] as const;
 export const POST_FORMS = ['пост', 'поста', 'постов'] as const;
 export const FILE_FORMS = ['файл', 'файла', 'файлов'] as const;
+export const STEP_FORMS = ['шаг', 'шага', 'шагов'] as const;
+export const PROMPT_FORMS = ['запрос', 'запроса', 'запросов'] as const;
+export const WORK_FORMS = ['работа', 'работы', 'работ'] as const;
