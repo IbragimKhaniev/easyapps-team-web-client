@@ -1,13 +1,17 @@
-import { Check, MessageSquareWarning } from 'lucide-react';
+import { CalendarPlus, Check, MessageSquareWarning } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import type { PipelineVideoStatus } from '@/api/models';
+import { useGetMediaAsset } from '@/api/generated/media-assets/media-assets';
+import type { MediaPostStatus, PipelineVideoStatus } from '@/api/models';
+import { newPostHref, postHref } from '@/app/paths';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { formatDateTime } from '@/lib/dates';
+import { formatDateTime, formatLongDate, todayIso } from '@/lib/dates';
 import { cn } from '@/lib/utils';
+import { PostStatusPill } from '../../media/components/StatusPill';
 import type { TPipelineActions } from '../hooks/usePipelineActions';
 import type { IPipelineLookups } from '../hooks/usePipelineData';
 import { REVIEWABLE_STATUSES, TIMELINE_LABELS, timelineSeconds, VIDEO_STATUS_META, VIDEO_STATUS_ORDER, videoStatusMeta } from '../lib/pipelineMeta';
@@ -22,12 +26,17 @@ interface IVideoSheetProps {
 /**
  * Ролик: видео с вариантами подписей, хук, раскладка по секундам, решение
  * людей («Одобрить» / «Нужны правки» с комментарием — агент увидит его в
- * pipeline_brief) и статус.
+ * pipeline_brief), статус и контент-план: собранный ролик уже в медиатеке,
+ * пост с ним — в один шаг, здесь же видно, в каких постах он стоит.
  */
 export const VideoSheet = ({ number, lookups, actions, onClose }: IVideoSheetProps) => {
   const video = number ? lookups.videoBy.get(number) : undefined;
   const [variant, setVariant] = useState(0);
   const [comment, setComment] = useState('');
+  const current = video?.variants[Math.min(variant, Math.max(0, video.variants.length - 1))];
+  const assetId = current?.assetId ?? video?.assetId ?? null;
+  const { data: assetData } = useGetMediaAsset(assetId ?? '', { query: { enabled: Boolean(assetId) } });
+  const usage = assetData?.data.usage ?? [];
 
   useEffect(() => {
     setVariant(0);
@@ -40,7 +49,6 @@ export const VideoSheet = ({ number, lookups, actions, onClose }: IVideoSheetPro
 
   const hero = video.hero ? lookups.heroBy.get(video.hero) : undefined;
   const format = video.format ? lookups.formatBy.get(video.format) : undefined;
-  const current = video.variants[Math.min(variant, Math.max(0, video.variants.length - 1))];
   const file = current?.file ?? video.file;
   const cover = current?.cover ?? video.cover;
   const total = timelineSeconds(video.timeline) || 1;
@@ -90,6 +98,35 @@ export const VideoSheet = ({ number, lookups, actions, onClose }: IVideoSheetPro
               ))}
             </div>
             {current.captions.length > 0 && <p className="text-[13px] text-ink-muted">{current.captions.join(' · ')}</p>}
+          </section>
+        )}
+
+        {file && (
+          <section className="flex flex-col gap-2 rounded-2xl bg-panel p-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="min-w-0">
+                <b className="block text-[15px] text-ink">В контент-план</b>
+                <span className="text-[12.5px] text-ink-muted">
+                  {assetId
+                    ? `Ролик${video.variants.length > 1 && current ? ` с подписями «${current.title}»` : ''} уже в медиатеке — пост с ним в один шаг`
+                    : 'Ролик появится в медиатеке через минуту после сборки'}
+                </span>
+              </span>
+              {assetId && (
+                <Button asChild size="sm">
+                  <Link to={newPostHref(todayIso(), assetId)}><CalendarPlus /> Запланировать пост</Link>
+                </Button>
+              )}
+            </div>
+            {usage.map((item) => (
+              <Link key={item.postId} to={postHref(item.postId)} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 transition-colors hover:bg-brand-50">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13.5px] font-semibold text-ink">{item.title}</span>
+                  <span className="block text-[12px] text-ink-muted">{formatLongDate(item.plannedDate)}</span>
+                </span>
+                <PostStatusPill status={item.status as MediaPostStatus} />
+              </Link>
+            ))}
           </section>
         )}
 

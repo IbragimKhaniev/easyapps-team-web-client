@@ -13,12 +13,14 @@ import { cn } from '@/lib/utils';
 import { AssetThumb } from '../../components/AssetThumb';
 import { uploadQueue, useUploadItems } from '../../hooks/uploadQueue';
 
-type TKindFilter = 'all' | MediaKind;
+/** `pipeline` — собранные ролики конвейера (они в медиатеке без копии). */
+type TKindFilter = 'all' | MediaKind | 'pipeline';
 
 const KIND_SEGMENTS: Array<{ value: TKindFilter; label: string }> = [
   { value: 'all', label: 'Все' },
   { value: 'image', label: 'Фото' },
   { value: 'video', label: 'Видео' },
+  { value: 'pipeline', label: 'Конвейер' },
   { value: 'document', label: 'Файлы' },
 ];
 
@@ -53,7 +55,13 @@ export const MediaPickerDialog = ({ open, onOpenChange, selectedIds, limit, onPi
   }, [open]);
 
   const { data, isLoading } = useListMediaAssets(
-    { kind: kind === 'all' ? undefined : kind, q: debounced || undefined, sort: 'newest', limit: PICKER_PAGE },
+    {
+      kind: kind === 'all' || kind === 'pipeline' ? undefined : kind,
+      source: kind === 'pipeline' ? 'pipeline' : undefined,
+      q: debounced || undefined,
+      sort: 'newest',
+      limit: PICKER_PAGE,
+    },
     { query: { enabled: open } },
   );
   const assets = data?.data ?? [];
@@ -153,7 +161,9 @@ export const MediaPickerDialog = ({ open, onOpenChange, selectedIds, limit, onPi
             })}
           </div>
         ) : (
-          <div className="py-16 text-center text-sm text-ink-muted">Здесь пока пусто — загрузите файл кнопкой выше.</div>
+          <div className="py-16 text-center text-sm text-ink-muted">
+            {kind === 'pipeline' ? 'Собранных роликов конвейера пока нет — они появятся здесь сами.' : 'Здесь пока пусто — загрузите файл кнопкой выше.'}
+          </div>
         )}
       </div>
 

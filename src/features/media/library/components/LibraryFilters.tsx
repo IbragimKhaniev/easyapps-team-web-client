@@ -1,4 +1,4 @@
-import { ArrowDownUp, Search, UserRound, X } from 'lucide-react';
+import { ArrowDownUp, Clapperboard, Search, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { AssetSort, AssetTag } from '@/api/models';
@@ -54,6 +54,9 @@ export const LibraryFilters = ({ filters, tags }: ILibraryFiltersProps) => {
         <SegmentedControl segments={KIND_SEGMENTS} value={filters.kind} onChange={filters.setKind} size="sm" className="max-w-full overflow-x-auto scrollbar-none" />
         <Button variant={filters.mine ? 'primary' : 'white'} size="sm" onClick={() => filters.setMine(!filters.mine)}>
           <UserRound /> Мои
+        </Button>
+        <Button variant={filters.pipeline ? 'primary' : 'white'} size="sm" onClick={() => filters.setPipeline(!filters.pipeline)}>
+          <Clapperboard /> Конвейер
         </Button>
         <AdaptivePicker
           title="Сортировка"

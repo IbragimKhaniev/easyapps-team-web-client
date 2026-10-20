@@ -19,6 +19,8 @@ export const useLibraryFilters = () => {
   const tag = params.get('tag');
   const query = params.get('q') ?? '';
   const mine = params.get('mine') === '1';
+  /** Только ролики конвейера. */
+  const pipeline = params.get('source') === 'pipeline';
 
   const update = useCallback((patch: Record<string, string | null>) =>
     setParams((current) => {
@@ -36,12 +38,14 @@ export const useLibraryFilters = () => {
     tag,
     query,
     mine,
+    pipeline,
     setKind: (value: TKindFilter) => update({ kind: value === 'all' ? null : value }),
     setSort: (value: AssetSort) => update({ sort: value === 'newest' ? null : value }),
     setTag: (value: string | null) => update({ tag: value }),
     setQuery: (value: string) => update({ q: value }),
     setMine: (value: boolean) => update({ mine: value ? '1' : null }),
-    reset: () => update({ kind: null, sort: null, tag: null, q: null, mine: null }),
-    active: kind !== 'all' || Boolean(tag) || Boolean(query) || mine,
+    setPipeline: (value: boolean) => update({ source: value ? 'pipeline' : null }),
+    reset: () => update({ kind: null, sort: null, tag: null, q: null, mine: null, source: null }),
+    active: kind !== 'all' || Boolean(tag) || Boolean(query) || mine || pipeline,
   };
 };

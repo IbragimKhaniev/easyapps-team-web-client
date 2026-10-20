@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
+import { useGetMediaAsset } from '@/api/generated/media-assets/media-assets';
 import { getGetMediaPostQueryKey, useGetMediaPost } from '@/api/generated/media-posts/media-posts';
 import type { MediaPost, MediaPostDetail, MediaPostDetailResponse } from '@/api/models';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
@@ -30,7 +31,7 @@ const ComposerSkeleton = () => (
  */
 export const PostComposerSheet = () => {
   const queryClient = useQueryClient();
-  const { openId, isNew, newDate, isOpen, closePost, replaceWithPost } = usePostParam();
+  const { openId, isNew, newDate, newMediaId, isOpen, closePost, replaceWithPost } = usePostParam();
   // Новый пост включает подключённые площадки — для этого список площадок нужен до первого кадра.
   const { isLoading: platformsLoading } = useIntegrationsState();
 
@@ -41,6 +42,9 @@ export const PostComposerSheet = () => {
     },
   });
   const post = openId ? data?.data ?? null : null;
+  // Новый пост с файлом (ролик из конвейера, файл из медиатеки): файл нужен до первого кадра черновика.
+  const { data: mediaData, isLoading: mediaLoading } = useGetMediaAsset(newMediaId ?? '', { query: { enabled: Boolean(newMediaId) } });
+  const initialAsset = newMediaId ? mediaData?.data ?? null : null;
 
   const onCreated = (created: MediaPost, media: MediaPostDetail['media']) => {
     // Карточка нового поста — сразу в кэш: конструктор не мигает загрузкой при смене адреса.
@@ -48,7 +52,7 @@ export const PostComposerSheet = () => {
     replaceWithPost(created.id);
   };
 
-  const ready = (isNew && !platformsLoading) || Boolean(post);
+  const ready = (isNew && !platformsLoading && !(newMediaId && mediaLoading)) || Boolean(post);
 
   return (
     <ResponsiveDialog
@@ -58,13 +62,14 @@ export const PostComposerSheet = () => {
       desktopClassName="h-[min(94vh,920px)] max-w-[1180px] overflow-hidden"
       mobileClassName="h-[96dvh]"
     >
-      {!ready && (isLoading || platformsLoading || !openId) ? (
+      {!ready && (isLoading || platformsLoading || mediaLoading || !openId) ? (
         <ComposerSkeleton />
       ) : ready ? (
         <PostComposer
-          key={post?.id ?? `new-${newDate}`}
+          key={post?.id ?? `new-${newDate}-${newMediaId ?? ''}`}
           post={post}
           newDate={newDate ?? todayIso()}
+          initialAsset={initialAsset}
           onClose={closePost}
           onCreated={onCreated}
         />

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, FileText, Loader2, Music, Trash2, X } from 'lucide-react';
+import { CalendarPlus, Clapperboard, Download, FileText, Loader2, Music, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ import {
   useUpdateMediaAsset,
 } from '@/api/generated/media-assets/media-assets';
 import type { MediaAssetDetail, MediaPostStatus } from '@/api/models';
-import { postHref } from '@/app/paths';
+import { newPostHref, pipelineVideoHref, postHref } from '@/app/paths';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { formatDateTime, formatLongDate } from '@/lib/dates';
+import { formatDateTime, formatLongDate, todayIso } from '@/lib/dates';
 import { apiErrorMessage } from '@/lib/errors';
 import { PostStatusPill } from '../../components/StatusPill';
 import { refreshLibraryViews } from '../../lib/cache';
@@ -95,12 +95,14 @@ export const AssetDetailSheet = ({ assetId, onClose }: IAssetDetailSheetProps) =
     }
   };
 
+  const fromPipeline = Boolean(asset?.source);
+
   const destroy = async () => {
     if (!asset) return;
     try {
       await remove.mutateAsync({ id: asset.id });
       refreshLibraryViews(queryClient);
-      toast.success('Файл удалён');
+      toast.success(fromPipeline ? 'Ролик убран из медиатеки — в конвейере он остался' : 'Файл удалён');
       onClose();
     } catch (error) {
       toast.error(apiErrorMessage(error, 'Не удалось удалить файл'));
@@ -155,8 +157,22 @@ export const AssetDetailSheet = ({ assetId, onClose }: IAssetDetailSheetProps) =
               <MetaRow label="Размер" value={formatBytes(asset.size)} />
               {asset.width && asset.height && <MetaRow label="Кадр" value={`${asset.width} × ${asset.height}`} />}
               {asset.durationSec && <MetaRow label="Длительность" value={formatDuration(asset.durationSec)} />}
-              <MetaRow label="Загружен" value={formatDateTime(asset.createdAt)} />
+              <MetaRow label={fromPipeline ? 'Собран' : 'Загружен'} value={formatDateTime(asset.createdAt)} />
             </div>
+
+            {asset.source && (
+              <Link
+                to={pipelineVideoHref(asset.source.projectKey, asset.source.video)}
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-[13.5px] transition-colors hover:bg-brand-100"
+              >
+                <Clapperboard className="h-5 w-5 shrink-0 text-brand-800" />
+                <span className="min-w-0 flex-1">
+                  <b className="block text-ink">Ролик {asset.source.video} из конвейера</b>
+                  <span className="text-ink-muted">{asset.source.variant === 'main' ? 'Основной файл' : `Вариант «${asset.source.variant}»`} · открыть в конвейере</span>
+                </span>
+              </Link>
+            )}
 
             <div className="flex flex-col gap-2">
               <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-ink-faint">Где используется</span>
@@ -176,6 +192,11 @@ export const AssetDetailSheet = ({ assetId, onClose }: IAssetDetailSheetProps) =
             </div>
 
             <div className="flex flex-wrap gap-2">
+              <Button asChild>
+                <Link to={newPostHref(todayIso(), asset.id)} onClick={onClose}>
+                  <CalendarPlus /> Запланировать пост
+                </Link>
+              </Button>
               {asset.url && (
                 <Button variant="soft" asChild>
                   <a href={asset.url} download={asset.fileName} target="_blank" rel="noreferrer">
@@ -184,7 +205,7 @@ export const AssetDetailSheet = ({ assetId, onClose }: IAssetDetailSheetProps) =
                 </Button>
               )}
               <Button variant="ghost" className="text-rose-600 hover:bg-rose-50 hover:text-rose-700" onClick={() => setConfirmDelete(true)}>
-                <Trash2 /> Удалить
+                <Trash2 /> {fromPipeline ? 'Убрать из медиатеки' : 'Удалить'}
               </Button>
             </div>
           </div>
@@ -194,13 +215,17 @@ export const AssetDetailSheet = ({ assetId, onClose }: IAssetDetailSheetProps) =
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить файл?</AlertDialogTitle>
-            <AlertDialogDescription>Файл удалится из хранилища. В уже вышедших постах он останется — площадки хранят свои копии.</AlertDialogDescription>
+            <AlertDialogTitle>{fromPipeline ? 'Убрать ролик из медиатеки?' : 'Удалить файл?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {fromPipeline
+                ? 'Ролик пропадёт из медиатеки и выбора файлов поста, но останется в конвейере. В уже вышедших постах он останется — площадки хранят свои копии.'
+                : 'Файл удалится из хранилища. В уже вышедших постах он останется — площадки хранят свои копии.'}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => void destroy()}>
-              Удалить
+              {fromPipeline ? 'Убрать' : 'Удалить'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -7,19 +7,29 @@ interface IComposerSource {
   post: MediaPostDetail | null;
   newDate: string;
   connected: ReadonlySet<SocialPlatform>;
+  /** Новый пост сразу с файлом: он в посте, его название — название поста. */
+  initialAsset?: MediaAsset | null;
 }
+
+const newDraft = (newDate: string, connected: ReadonlySet<SocialPlatform>, asset: MediaAsset | null | undefined): IComposerDraft => {
+  const draft = emptyDraft(newDate, connected);
+  return asset ? { ...draft, title: asset.title, mediaIds: [asset.id] } : draft;
+};
 
 /**
  * Состояние конструктора: черновик, исходник (для «есть несохранённое»)
  * и файлы, которые черновик уже видел, — у новых из медиатеки нужны превью
  * до сохранения поста.
  */
-export const useComposerDraft = ({ post, newDate, connected }: IComposerSource) => {
-  const initial = useMemo(() => (post ? draftFromPost(post) : emptyDraft(newDate, connected)), [post, newDate, connected]);
+export const useComposerDraft = ({ post, newDate, connected, initialAsset }: IComposerSource) => {
+  const initial = useMemo(
+    () => (post ? draftFromPost(post) : newDraft(newDate, connected, initialAsset)),
+    [post, newDate, connected, initialAsset],
+  );
   const [baseline, setBaseline] = useState<IComposerDraft>(initial);
   const [draft, setDraft] = useState<IComposerDraft>(initial);
   const [assets, setAssets] = useState<Map<string, MediaAsset>>(
-    () => new Map((post?.media ?? []).map((asset) => [asset.id, asset])),
+    () => new Map([...(post?.media ?? []), ...(!post && initialAsset ? [initialAsset] : [])].map((asset) => [asset.id, asset])),
   );
 
   const setField = useCallback(<K extends keyof IComposerDraft>(key: K, value: IComposerDraft[K]) => {

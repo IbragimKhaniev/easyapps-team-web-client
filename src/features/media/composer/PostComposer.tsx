@@ -1,7 +1,7 @@
 import { Copy, MoreHorizontal, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import type { MediaPost, MediaPostDetail } from '@/api/models';
+import type { MediaAsset, MediaPost, MediaPostDetail } from '@/api/models';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import {
   AlertDialog,
@@ -36,6 +36,8 @@ import { draftFromPost, enabledPlatforms } from './model';
 interface IPostComposerProps {
   post: MediaPostDetail | null;
   newDate: string;
+  /** Новый пост сразу с этим файлом и его названием (ролик из конвейера). */
+  initialAsset?: MediaAsset | null;
   onClose: () => void;
   /** Новый пост сохранился — адрес переходит на его id. */
   onCreated: (post: MediaPost, assets: MediaPostDetail['media']) => void;
@@ -56,10 +58,10 @@ const Section = ({ title, children, className }: { title?: string; children: Rea
  * Компьютер — два столбца: редактор и живой предпросмотр; телефон — шторка
  * с переключателем «Пост / Как увидят».
  */
-export const PostComposer = ({ post, newDate, onClose, onCreated }: IPostComposerProps) => {
+export const PostComposer = ({ post, newDate, initialAsset, onClose, onCreated }: IPostComposerProps) => {
   const isDesktop = useIsDesktop();
   const { connected, accountOf } = useIntegrationsState();
-  const api = useComposerDraft({ post, newDate, connected });
+  const api = useComposerDraft({ post, newDate, connected, initialAsset });
   const actions = usePostActions();
   const [tab, setTab] = useState<TContentTab>('common');
   const [pane, setPane] = useState<TMobilePane>('edit');

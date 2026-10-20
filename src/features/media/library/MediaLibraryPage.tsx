@@ -46,6 +46,7 @@ export const MediaLibraryPage = () => {
     tag: filters.tag ?? undefined,
     q: filters.query || undefined,
     uploadedBy: filters.mine ? 'me' : undefined,
+    source: filters.pipeline ? 'pipeline' : undefined,
     sort: filters.sort,
   });
   const items = assets.data?.pages.flatMap((page) => page.data) ?? [];

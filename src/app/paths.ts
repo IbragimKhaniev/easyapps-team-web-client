@@ -27,13 +27,22 @@ export const PATHS = {
  */
 export const TASK_PARAM = 'task';
 
-/** Конструктор поста поверх экрана: `?post=<id>` или `?post=new&date=YYYY-MM-DD`. */
+/** Конструктор поста поверх экрана: `?post=<id>` или `?post=new&date=YYYY-MM-DD[&media=<файл>]`. */
 export const POST_PARAM = 'post';
 export const POST_DATE_PARAM = 'date';
+/** Файл медиатеки, с которым открыть новый пост (ролик конвейера, файл из медиатеки). */
+export const POST_MEDIA_PARAM = 'media';
 export const NEW_POST = 'new';
 
 /** Пост контент-плана по ссылке — открывается поверх календаря. */
 export const postHref = (id: string): string => `${PATHS.media.plan}?${POST_PARAM}=${encodeURIComponent(id)}`;
+
+/** Новый пост в контент-плане на день — сразу с файлом медиатеки, если он задан. */
+export const newPostHref = (date: string, mediaId?: string | null): string => {
+  const params = new URLSearchParams({ [POST_PARAM]: NEW_POST, [POST_DATE_PARAM]: date });
+  if (mediaId) params.set(POST_MEDIA_PARAM, mediaId);
+  return `${PATHS.media.plan}?${params.toString()}`;
+};
 
 /** Прямая ссылка на задачу: `/tasks/EA-42` перенаправляется на список с открытой карточкой. */
 export const taskHref = (key: string): string => `${PATHS.tasks}/${encodeURIComponent(key)}`;
@@ -60,3 +69,7 @@ export const PIPELINE_HERO_PARAM = 'hero';
 
 export const pipelineHref = (project: string, tab?: TPipelineTab | null): string =>
   `${PATHS.pipeline}/${encodeURIComponent(project)}${tab ? `/${tab}` : ''}`;
+
+/** Ролик конвейера открытым поверх вкладки «Ролики». */
+export const pipelineVideoHref = (project: string, video: string): string =>
+  `${pipelineHref(project, 'videos')}?${PIPELINE_VIDEO_PARAM}=${encodeURIComponent(video)}`;
