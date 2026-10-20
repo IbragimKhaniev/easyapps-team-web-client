@@ -93,8 +93,9 @@ export const ConnectWizard = () => {
           ))}
         </div>
         <p className="mt-4 text-[13px] leading-relaxed text-ink-muted">
-          Агент сам пропишет сервер команды, поставит скилл easyapps-team и включит автожурнал: ваши запросы и его ответы будут
-          попадать в журнал работы, а задачи — обновляться по ходу.
+          Агент сам поставит плагин easyapps-team: сервер команды, скиллы, команды /easyapps-team:… и хуки. В каждом разговоре
+          у агента будут ваши задачи и правила из базы знаний, работа для easyapps пойдёт в журнал, задачи обновятся по ходу,
+          а выводы осядут в базе знаний.
         </p>
         <Button className="mt-4" size="lg" disabled={!agent || createKey.isPending} onClick={() => void create()}>
           {createKey.isPending ? <Loader2 className="animate-spin" /> : <KeyRound />} Показать промт подключения

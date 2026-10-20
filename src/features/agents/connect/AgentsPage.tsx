@@ -1,4 +1,4 @@
-import { NotebookPen, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { BookOpen, NotebookPen, Puzzle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { PATHS } from '@/app/paths';
@@ -10,21 +10,23 @@ import { KeysCard } from './KeysCard';
 import { TeamAgentsCard } from './TeamAgentsCard';
 
 const HOW_IT_WORKS = [
-  { icon: NotebookPen, text: 'Каждая работа идёт в журнал: агент открывает её над задачей, пишет шаги, результаты с цифрами, плюсы и минусы.' },
-  { icon: RefreshCw, text: 'Задача обновляется сама: «В работе» на старте, итог — комментарием, вопросы людям — в задачу.' },
+  { icon: Puzzle, text: 'Плагин easyapps-team встраивается в агента: в начале разговора даёт ему ваши задачи и правила команды, на каждый запрос напоминает про журнал.' },
+  { icon: NotebookPen, text: 'Работа для easyapps идёт в журнал: агент открывает её над задачей, пишет шаги, результаты с цифрами, плюсы и минусы. Личные проекты — нет.' },
+  { icon: RefreshCw, text: 'Трекер обновляется сам: нужна задача — заводится, этап сменился — меняется статус, договорённости и итог — комментариями.' },
+  { icon: BookOpen, text: 'Важное оседает в базе знаний по направлениям, и следующая работа по теме сразу получает его.' },
   { icon: Sparkles, text: 'Автожурнал записывает ваши запросы и ответы агента — даже если агент забыл записать сам.' },
   { icon: ShieldCheck, text: 'Пароли, токены и ключи в текстах маскируются до записи. Ключ агента можно отозвать в любой момент.' },
 ];
 
 /**
- * «Подключить агента»: мастер (агент → промт с ключом → проверка), мои ключи и
- * кто в команде уже работает через агента.
+ * «Агенты и плагин»: мастер установки плагина (агент → промт с ключом →
+ * проверка), мои ключи и кто в команде уже работает через агента.
  */
 export const AgentsPage = () => (
   <div className="animate-fade-up">
     <PageHeader
-      title="Подключить агента"
-      subtitle="Claude Code или Codex работают с задачами, контент-планом и журналом от вашего имени."
+      title="Агенты и плагин"
+      subtitle="Плагин easyapps-team для Claude Code и Codex: агент ведёт журнал, задачи и базу знаний от вашего имени."
       actions={(
         <Button variant="outline" size="sm" asChild>
           <Link to={PATHS.journal}><NotebookPen /> Журнал</Link>

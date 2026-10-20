@@ -1,4 +1,5 @@
 import {
+  BookMarked,
   Bot,
   CircleDot,
   CircleHelp,
@@ -43,6 +44,7 @@ export const ENTRY_KIND_META: Record<JournalEntryKind, IKindMeta> = {
   question: { label: 'Вопрос людям', icon: CircleHelp, dot: 'bg-amber-50 text-amber-700' },
   note: { label: 'Заметка', icon: StickyNote, dot: 'bg-zinc-100 text-zinc-600' },
   task: { label: 'Изменение', icon: RefreshCw, dot: 'bg-zinc-100 text-zinc-500' },
+  knowledge: { label: 'В базу знаний', icon: BookMarked, dot: 'bg-brand-50 text-brand-800' },
 };
 
 export interface IPillMeta {

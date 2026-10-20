@@ -9,6 +9,7 @@ export const PATHS = {
   journal: '/journal',
   journalReview: '/journal/review',
   agents: '/agents',
+  knowledge: '/knowledge',
   media: {
     root: '/media',
     plan: '/media/plan',
@@ -41,3 +42,8 @@ export const WORK_PARAM = 'work';
 
 /** Ссылка на работу журнала: открывается поверх ленты журнала. */
 export const workHref = (id: string): string => `${PATHS.journal}?${WORK_PARAM}=${encodeURIComponent(id)}`;
+
+/** Запись базы знаний поверх страницы базы: `?entry=<id>`. */
+export const KNOWLEDGE_ENTRY_PARAM = 'entry';
+
+export const knowledgeHref = (id: string): string => `${PATHS.knowledge}?${KNOWLEDGE_ENTRY_PARAM}=${encodeURIComponent(id)}`;

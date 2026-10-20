@@ -26,6 +26,7 @@ const MediaSettingsPage = lazyPage(() => import('@/features/media/settings/Media
 const JournalPage = lazyPage(() => import('@/features/agents/journal/JournalPage'), 'JournalPage');
 const JournalReviewPage = lazyPage(() => import('@/features/agents/review/JournalReviewPage'), 'JournalReviewPage');
 const AgentsPage = lazyPage(() => import('@/features/agents/connect/AgentsPage'), 'AgentsPage');
+const KnowledgePage = lazyPage(() => import('@/features/knowledge/KnowledgePage'), 'KnowledgePage');
 
 const PageFallback = () => <div className="skeleton m-4 h-48 rounded-card lg:m-0" />;
 
@@ -51,6 +52,7 @@ const routes: RouteObject[] = [
       { path: PATHS.journal, element: page(<JournalPage />) },
       { path: PATHS.journalReview, element: page(<JournalReviewPage />) },
       { path: PATHS.agents, element: page(<AgentsPage />) },
+      { path: PATHS.knowledge, element: page(<KnowledgePage />) },
       { path: '*', element: <Navigate to={PATHS.overview} replace /> },
     ],
   },

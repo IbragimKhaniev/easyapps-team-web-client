@@ -109,7 +109,7 @@ export const JournalPage = () => {
       </Button>
       {isDesktop && (
         <Button size="lg" asChild>
-          <Link to={PATHS.agents}><Bot /> Подключить агента</Link>
+          <Link to={PATHS.agents}><Bot /> Агенты и плагин</Link>
         </Button>
       )}
     </>
@@ -165,8 +165,8 @@ export const JournalPage = () => {
           <EmptyState
             icon={NotebookPen}
             title="Здесь появится работа команды"
-            description="Подключите Claude Code или Codex — каждая работа через агента попадёт сюда: запросы, шаги, результаты, плюсы и минусы."
-            action={<Button asChild><Link to={PATHS.agents}><Bot /> Подключить агента</Link></Button>}
+            description="Поставьте плагин easyapps-team в Claude Code или Codex — каждая работа для easyapps попадёт сюда: запросы, шаги, результаты, плюсы и минусы."
+            action={<Button asChild><Link to={PATHS.agents}><Bot /> Поставить плагин</Link></Button>}
           />
         ) : (
           <>

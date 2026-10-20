@@ -12,6 +12,7 @@ import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Button } from '@/components/ui/button';
 import { useTaskParam } from '@/features/tasks/hooks/useTaskParam';
 import { useMembers } from '@/hooks/useDirectory';
+import { useLastPresent } from '@/hooks/useLastPresent';
 import { formatDateTime } from '@/lib/dates';
 import { useWorkParam } from '../hooks/useWorkParam';
 import { formatMinutes, isConversationOnly } from '../lib/journalMeta';
@@ -56,7 +57,8 @@ export const WorkSheet = () => {
   const { openTask } = useTaskParam();
   const { map: members } = useMembers();
   const [filter, setFilter] = useState<TTimelineFilter>('all');
-  const { data, isLoading, isError } = useGetJournalSession(openId ?? '', {
+  const shownId = useLastPresent(openId);
+  const { data, isLoading, isError } = useGetJournalSession(shownId ?? '', {
     query: {
       enabled: Boolean(openId),
       refetchInterval: (query) => (query.state.data?.data.status === 'active' ? LIVE_REFRESH_MS : false),

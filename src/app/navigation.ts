@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookOpen,
   Bot,
   CalendarDays,
   CircleCheckBig,
@@ -51,11 +52,12 @@ export const NAV_SECTIONS: INavSection[] = [
     ],
   },
   {
-    title: 'Агенты',
+    title: 'Работа',
     items: [
       { to: PATHS.journal, label: 'Журнал работы', icon: NotebookPen, end: true },
       { to: PATHS.journalReview, label: 'Разбор', icon: Scale },
-      { to: PATHS.agents, label: 'Подключить агента', icon: Bot },
+      { to: PATHS.knowledge, label: 'База знаний', icon: BookOpen },
+      { to: PATHS.agents, label: 'Агенты и плагин', icon: Bot },
     ],
   },
   {
