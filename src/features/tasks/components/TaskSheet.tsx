@@ -1,16 +1,30 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useTaskParam } from '../hooks/useTaskParam';
-import { TaskDetail } from './detail/TaskDetail';
+import { TaskDetailSkeleton } from './detail/TaskDetailSkeleton';
 
 const PANEL_SPRING = { type: 'spring', stiffness: 420, damping: 40 } as const;
 
+const TaskDetail = lazy(async () => ({ default: (await import('./detail/TaskDetail')).TaskDetail }));
+
+/**
+ * Содержимое карточки — отдельным чанком: в нём markdown (~160 КБ), на старте он
+ * не нужен. Пока чанк грузится, на месте карточки её заготовка.
+ */
+const TaskContent = ({ taskKey, onClose }: { taskKey: string; onClose: () => void }) => (
+  <Suspense fallback={<TaskDetailSkeleton />}>
+    <TaskDetail key={taskKey} taskKey={taskKey} onClose={onClose} />
+  </Suspense>
+);
+
 /**
  * Карточка задачи поверх любого экрана по `?task=EA-42`. Компьютер — панель
- * справа (список виден слева), телефон — шторка почти во весь экран.
+ * справа (список виден слева), телефон — шторка почти во весь экран. Оболочка
+ * (панель, шторка, Esc) в стартовом коде — иначе пропала бы анимация закрытия;
+ * лениво только содержимое.
  */
 export const TaskSheet = () => {
   const { openKey, closeTask } = useTaskParam();
@@ -51,7 +65,7 @@ export const TaskSheet = () => {
               aria-label="Задача"
               data-task-panel
             >
-              <TaskDetail key={openKey} taskKey={openKey} onClose={closeTask} />
+              <TaskContent taskKey={openKey} onClose={closeTask} />
             </motion.aside>
           </>
         )}
@@ -64,7 +78,7 @@ export const TaskSheet = () => {
       <DrawerContent className="h-[94dvh]">
         <DrawerTitle className="sr-only">Задача</DrawerTitle>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {openKey && <TaskDetail key={openKey} taskKey={openKey} onClose={closeTask} />}
+          {openKey && <TaskContent taskKey={openKey} onClose={closeTask} />}
         </div>
       </DrawerContent>
     </Drawer>

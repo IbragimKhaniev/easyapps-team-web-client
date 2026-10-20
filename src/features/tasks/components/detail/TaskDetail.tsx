@@ -23,6 +23,7 @@ import { ProjectBadge } from '../ProjectBadge';
 import { TaskChecklist } from './TaskChecklist';
 import { TaskComments } from './TaskComments';
 import { TaskDescription } from './TaskDescription';
+import { TaskDetailSkeleton } from './TaskDetailSkeleton';
 import { TaskHistory } from './TaskHistory';
 import { TaskProperties } from './TaskProperties';
 import { TaskTitle } from './TaskTitle';
@@ -49,15 +50,7 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
   const task = data?.data;
   const workCount = useTaskWorkCount(taskKey);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4 p-6">
-        <div className="skeleton h-5 w-24" />
-        <div className="skeleton h-9 w-3/4" />
-        <div className="skeleton h-40 w-full" />
-      </div>
-    );
-  }
+  if (isLoading) return <TaskDetailSkeleton />;
 
   if (isError || !task) {
     return <EmptyState icon={X} title="Задача не найдена" description="Возможно, её ключ изменился или она удалена." action={<Button onClick={onClose}>Закрыть</Button>} />;
