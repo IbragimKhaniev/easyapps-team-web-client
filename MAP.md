@@ -1,10 +1,11 @@
 <!-- map-covers: src -->
-<!-- map-base: 6b35413 -->
+<!-- map-base: 7a4d135 -->
 
 # Карта: фронт team.easyapps.click
 
-Рабочее место команды easyapps: трекер задач и медиасистема (контент-план,
-конструктор постов, медиатека, лента площадок, аналитика, «Площадки»). На
+Рабочее место команды easyapps: трекер задач, медиасистема (контент-план,
+конструктор постов, медиатека, лента площадок, аналитика, «Площадки») и
+агенты — подключение Claude Code и Codex, журнал их работы и разбор. На
 iPhone — как приложение (PWA, крупные заголовки, стеклянный таббар, шторки),
 на компьютере — дашборд в стиле референса Donezo в цветах easyapps.
 API — `team-api` из `easyapps-web-server` (его карта —
@@ -30,6 +31,11 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Медиатека | `features/media/library` + очередь загрузок `media/hooks/uploadQueue.ts` | файл грузится и после закрытия окна |
 | Лента и аналитика | `features/media/feed`, `features/media/analytics` (recharts) | графики — только в этих страницах |
 | Площадки | `features/media/settings` — форма по `fields` с сервера, вход MTProto, хранилище, фоновые задачи | |
+| Агенты: журнал | `features/agents/journal` — `JournalPage` (живые работы, по дням, фильтры в адресе `useJournalFilters`) | без фильтра лента — закрытые работы, живые — блоком сверху |
+| Агенты: разбор | `features/agents/review` — `JournalReviewPage`, `ReviewItemsCard`, `PeopleCard`, `DaysCard` | сутки разбора — UTC, как вся статистика |
+| Агенты: подключение | `features/agents/connect` — `ConnectWizard` (агент → ключ и промт → «Подключено» / «Автожурнал работает»), `KeysCard`, `TeamAgentsCard` | промт и скилл собирает сервер; ключ — только по кнопке |
+| Работа журнала | `features/agents/components` — `WorkSheet` (`?work=` поверх любого экрана, лениво через `WorkHost`), `WorkCard`, `WorkTimeline`, `WorkBadges`; вид — `features/agents/lib/journalMeta.ts` | живая работа перечитывается раз в 5 с |
+| Агенты в задаче и сводке | вкладка «Агенты» — `tasks/components/detail/TaskWork.tsx` (+ `hooks/useTaskWorkCount.ts`), «через claude-code» в `TaskHistory.tsx`; `overview/widgets/AgentsNowCard.tsx` | |
 
 ## Как это работает
 
@@ -37,8 +43,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
   (10 с), экраны медиа перечитываются сами: план — 30 с, пост в публикации —
   4 с, задачи — 5 с, лента — минута.
 - **Слои поверх экрана** — параметры адреса: `?task=EA-42` (карточка задачи),
-  `?post=…` (конструктор), `?asset=` (файл медиатеки), `?item=` (пост ленты).
-  Ссылку можно переслать, «назад» закрывает слой.
+  `?post=…` (конструктор), `?asset=` (файл медиатеки), `?item=` (пост ленты),
+  `?work=<id>` (работа журнала). Ссылку можно переслать, «назад» закрывает слой.
 - **Телефон/компьютер** — `useIsDesktop()` (≥1024px): на компьютере диалоги и
   поповеры, на телефоне шторки vaul (`ResponsiveDialog`, `AdaptivePicker`).
 - **Загрузка файла** — `uploadQueue.add`: браузер снимает размеры и кадр видео
@@ -66,6 +72,12 @@ API — `team-api` из `easyapps-web-server` (его карта —
    маршрут — `app/routes.tsx` (`lazyPage`).
 2. Пункт навигации — `NAV_SECTIONS` и `MEDIA_TABS` (`app/navigation.ts`).
 3. На телефоне под заголовком — `MediaSectionTabs`.
+
+### Новый вид записи журнала
+
+Вид приходит из swagger (`JournalEntryKind`); подпись, значок и цвет — в
+`ENTRY_KIND_META` (`features/agents/lib/journalMeta.ts`), особая отрисовка — в
+`WorkTimeline.tsx`.
 
 ### Новое поле API
 
