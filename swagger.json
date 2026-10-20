@@ -19,6 +19,901 @@
       }
     },
     "schemas": {
+      "AgentClient": {
+        "type": "string",
+        "enum": [
+          "claude-code",
+          "codex",
+          "cursor",
+          "other"
+        ]
+      },
+      "ConnectableAgentClient": {
+        "type": "string",
+        "enum": [
+          "claude-code",
+          "codex"
+        ]
+      },
+      "AgentKey": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "client",
+          "hint",
+          "lastClient",
+          "lastUsedAt",
+          "hooksSeenAt",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "client": {
+            "$ref": "#/components/schemas/AgentClient"
+          },
+          "hint": {
+            "type": "string",
+            "description": "Хвост ключа, «…a1b2»"
+          },
+          "lastClient": {
+            "type": "string",
+            "nullable": true,
+            "description": "Клиент из initialize MCP, «claude-code 2.1.3»; null — агент ещё не подключался"
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "hooksSeenAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Последнее событие хуков автожурнала"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateAgentKeyInput": {
+        "type": "object",
+        "required": [
+          "client"
+        ],
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/ConnectableAgentClient"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      },
+      "AgentConnectKit": {
+        "type": "object",
+        "required": [
+          "client",
+          "mcpUrl",
+          "prompt",
+          "afterSteps"
+        ],
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/ConnectableAgentClient"
+          },
+          "mcpUrl": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Промт подключения — человек отправляет его своему агенту"
+          },
+          "afterSteps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreatedAgentKey": {
+        "type": "object",
+        "required": [
+          "key",
+          "secret",
+          "connect"
+        ],
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/AgentKey"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Значение ключа — только в этом ответе"
+          },
+          "connect": {
+            "$ref": "#/components/schemas/AgentConnectKit"
+          }
+        }
+      },
+      "CreatedAgentKeyResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreatedAgentKey"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AgentKeyListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentKey"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AgentMemberStatus": {
+        "type": "object",
+        "required": [
+          "userId",
+          "keys",
+          "clients",
+          "lastUsedAt",
+          "hooksSeenAt",
+          "activeWork",
+          "workLast7Days",
+          "lastWorkAt"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "keys": {
+            "type": "integer",
+            "description": "Действующих ключей"
+          },
+          "clients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "hooksSeenAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "activeWork": {
+            "type": "integer"
+          },
+          "workLast7Days": {
+            "type": "integer"
+          },
+          "lastWorkAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "AgentTeamStatusResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentMemberStatus"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "JournalStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "finished",
+          "abandoned"
+        ],
+        "description": "abandoned — закрыта без итога (агент не позвал finish_work)"
+      },
+      "JournalOutcome": {
+        "type": "string",
+        "enum": [
+          "done",
+          "progress",
+          "blocked",
+          "failed"
+        ]
+      },
+      "JournalOrigin": {
+        "type": "string",
+        "enum": [
+          "agent",
+          "hook"
+        ]
+      },
+      "JournalEntryKind": {
+        "type": "string",
+        "enum": [
+          "prompt",
+          "reply",
+          "step",
+          "decision",
+          "result",
+          "problem",
+          "win",
+          "question",
+          "note",
+          "task"
+        ],
+        "description": "prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,\nresult, problem (минус), win (плюс), question, note — пишет агент; task —\nправка трекера или контент-плана через агента\n"
+      },
+      "JournalEntrySource": {
+        "type": "string",
+        "enum": [
+          "agent",
+          "hook",
+          "system"
+        ]
+      },
+      "JournalCounts": {
+        "type": "object",
+        "required": [
+          "prompts",
+          "replies",
+          "steps",
+          "decisions",
+          "results",
+          "problems",
+          "wins",
+          "questions",
+          "notes",
+          "tasks"
+        ],
+        "properties": {
+          "prompts": {
+            "type": "integer"
+          },
+          "replies": {
+            "type": "integer"
+          },
+          "steps": {
+            "type": "integer"
+          },
+          "decisions": {
+            "type": "integer"
+          },
+          "results": {
+            "type": "integer"
+          },
+          "problems": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "questions": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "integer"
+          },
+          "tasks": {
+            "type": "integer"
+          }
+        }
+      },
+      "JournalMetric": {
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          }
+        }
+      },
+      "JournalLink": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "JournalLastEntry": {
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "createdAt"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/JournalEntryKind"
+          },
+          "text": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "JournalSession": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "client",
+          "clientLabel",
+          "workspace",
+          "taskId",
+          "taskKey",
+          "taskTitle",
+          "projectId",
+          "title",
+          "origin",
+          "status",
+          "outcome",
+          "summary",
+          "pluses",
+          "minuses",
+          "nextSteps",
+          "startedAt",
+          "lastActivityAt",
+          "finishedAt",
+          "activeMinutes",
+          "counts",
+          "lastEntry"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "client": {
+            "$ref": "#/components/schemas/AgentClient"
+          },
+          "clientLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "workspace": {
+            "type": "string",
+            "nullable": true,
+            "description": "Папка, где работал агент (только имя)"
+          },
+          "taskId": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Цель работы; у работы из хука — начало первого запроса"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/JournalOrigin"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JournalStatus"
+          },
+          "outcome": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JournalOutcome"
+              }
+            ],
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "pluses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextSteps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "activeMinutes": {
+            "type": "integer",
+            "description": "Минуты работы без долгих пауз"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/JournalCounts"
+          },
+          "lastEntry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JournalLastEntry"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "JournalEntry": {
+        "type": "object",
+        "required": [
+          "id",
+          "sessionId",
+          "kind",
+          "source",
+          "text",
+          "metrics",
+          "links",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/JournalEntryKind"
+          },
+          "source": {
+            "$ref": "#/components/schemas/JournalEntrySource"
+          },
+          "text": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalMetric"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalLink"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "JournalSessionDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalSession"
+          },
+          {
+            "type": "object",
+            "required": [
+              "entries",
+              "entriesTruncated"
+            ],
+            "properties": {
+              "entries": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/JournalEntry"
+                }
+              },
+              "entriesTruncated": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "JournalSessionListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data",
+          "pagination"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalSession"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "JournalSessionDetailResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JournalSessionDetail"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "JournalOutcomeCounts": {
+        "type": "object",
+        "required": [
+          "sessions",
+          "activeMinutes",
+          "done",
+          "progress",
+          "blocked",
+          "failed",
+          "abandoned",
+          "active",
+          "problems",
+          "wins",
+          "questions"
+        ],
+        "properties": {
+          "sessions": {
+            "type": "integer"
+          },
+          "activeMinutes": {
+            "type": "integer"
+          },
+          "done": {
+            "type": "integer"
+          },
+          "progress": {
+            "type": "integer"
+          },
+          "blocked": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "abandoned": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "integer"
+          },
+          "problems": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "questions": {
+            "type": "integer"
+          }
+        }
+      },
+      "JournalReviewPerson": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalOutcomeCounts"
+          },
+          {
+            "type": "object",
+            "required": [
+              "userId",
+              "lastAt"
+            ],
+            "properties": {
+              "userId": {
+                "type": "string"
+              },
+              "lastAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ]
+      },
+      "JournalReviewProject": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalOutcomeCounts"
+          },
+          {
+            "type": "object",
+            "required": [
+              "projectId"
+            ],
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "JournalReviewItem": {
+        "type": "object",
+        "required": [
+          "text",
+          "source",
+          "sessionId",
+          "userId",
+          "taskKey",
+          "taskTitle",
+          "at"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "entry"
+            ],
+            "description": "summary — из итога работы, entry — запись по ходу"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "taskKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "JournalReviewDay": {
+        "type": "object",
+        "required": [
+          "date",
+          "sessions",
+          "activeMinutes",
+          "problems",
+          "wins"
+        ],
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "activeMinutes": {
+            "type": "integer"
+          },
+          "problems": {
+            "type": "integer"
+          },
+          "wins": {
+            "type": "integer"
+          }
+        }
+      },
+      "JournalReviewTotals": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalOutcomeCounts"
+          },
+          {
+            "type": "object",
+            "required": [
+              "people"
+            ],
+            "properties": {
+              "people": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "JournalReview": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "totals",
+          "people",
+          "projects",
+          "days",
+          "minuses",
+          "pluses",
+          "questions",
+          "stuck"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/JournalReviewTotals"
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewPerson"
+            }
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewProject"
+            }
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewDay"
+            }
+          },
+          "minuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewItem"
+            }
+          },
+          "pluses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewItem"
+            }
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalReviewItem"
+            }
+          },
+          "stuck": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalSession"
+            }
+          }
+        }
+      },
+      "JournalReviewResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JournalReview"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
       "ResponseMeta": {
         "type": "object",
         "properties": {
@@ -2870,6 +3765,25 @@
           "restored"
         ]
       },
+      "ActivityVia": {
+        "type": "object",
+        "description": "Правка сделана агентом через MCP от имени actor",
+        "required": [
+          "client",
+          "journalSessionId"
+        ],
+        "properties": {
+          "client": {
+            "type": "string",
+            "description": "Клиент агента, например «claude-code 2.1.3»"
+          },
+          "journalSessionId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Работа журнала, внутри которой была правка"
+          }
+        }
+      },
       "Activity": {
         "type": "object",
         "required": [
@@ -2880,6 +3794,7 @@
           "type",
           "from",
           "to",
+          "via",
           "createdAt"
         ],
         "properties": {
@@ -2905,6 +3820,15 @@
           "to": {
             "nullable": true,
             "description": "Значение после"
+          },
+          "via": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivityVia"
+              }
+            ],
+            "nullable": true,
+            "description": "Через агента (MCP); с сайта — null"
           },
           "createdAt": {
             "type": "string",
@@ -3284,6 +4208,334 @@
     }
   ],
   "paths": {
+    "/agents/keys": {
+      "get": {
+        "operationId": "listAgentKeys",
+        "summary": "Мои ключи агентов",
+        "tags": [
+          "Agents"
+        ],
+        "responses": {
+          "200": {
+            "description": "Действующие ключи",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentKeyListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAgentKey",
+        "summary": "Новый ключ агента и промт подключения",
+        "description": "Значение ключа (`secret`) приходит только в этом ответе и уже вставлено в\nпромт подключения. Прежние ключи того же агента, которыми ни разу не\nпользовались, отзываются.\n",
+        "tags": [
+          "Agents"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgentKeyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ключ создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedAgentKeyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/agents/keys/{id}": {
+      "delete": {
+        "operationId": "revokeAgentKey",
+        "summary": "Отозвать свой ключ агента",
+        "tags": [
+          "Agents"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Отозван"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/agents/team": {
+      "get": {
+        "operationId": "getAgentsTeamStatus",
+        "summary": "Подключение агентов в команде",
+        "description": "Кто подключил агента, когда он работал и сколько работ в журнале.",
+        "tags": [
+          "Agents"
+        ],
+        "responses": {
+          "200": {
+            "description": "Участники команды",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTeamStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/journal/sessions": {
+      "get": {
+        "operationId": "listJournalSessions",
+        "summary": "Журнал работы",
+        "description": "Работы людей с агентами — свежие сверху, с последней записью хода.",
+        "tags": [
+          "Journal"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Работа начата не раньше (YYYY-MM-DD, UTC)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "description": "Ключ задачи (EA-42)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Через запятую (active, finished, abandoned)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "description": "Через запятую (done, progress, blocked, failed)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AgentClient"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Поиск по цели и итогу",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Работы",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalSessionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/journal/sessions/{id}": {
+      "get": {
+        "operationId": "getJournalSession",
+        "summary": "Работа целиком",
+        "description": "Цель, итог, плюсы и минусы и весь ход — запросы человека, ответы агента, шаги, результаты.",
+        "tags": [
+          "Journal"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Работа",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalSessionDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/journal/review": {
+      "get": {
+        "operationId": "getJournalReview",
+        "summary": "Разбор работы за период",
+        "description": "Исходы работ по людям и проектам, минусы и плюсы (из итогов и по ходу),\nоткрытые вопросы людям, работы, где упёрлись. Сутки — UTC.\n",
+        "tags": [
+          "Journal"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Разбор",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalReviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",

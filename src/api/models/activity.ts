@@ -13,6 +13,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ActivityType } from "./activityType";
+import type { ActivityVia } from "./activityVia";
 
 export interface Activity {
   id: string;
@@ -24,5 +25,7 @@ export interface Activity {
   from: unknown;
   /** Значение после */
   to: unknown;
+  /** Через агента (MCP); с сайта — null */
+  via: ActivityVia | null;
   createdAt: string;
 }
