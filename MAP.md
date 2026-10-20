@@ -1,12 +1,13 @@
 <!-- map-covers: src -->
-<!-- map-base: 28ba5a7 -->
+<!-- map-base: b87b0d8 -->
 
 # Карта: фронт team.easyapps.click
 
 Рабочее место команды easyapps: трекер задач, медиасистема (контент-план,
 конструктор постов, медиатека, лента площадок, аналитика, «Площадки») и
 агенты — плагин easyapps-team для Claude Code и Codex, журнал их работы,
-разбор и база знаний по направлениям. На
+разбор и база знаний по направлениям; конвейер роликов (каст, библиотека
+клипов, ролики и их проверка) и общий аккаунт Higgsfield команды. На
 iPhone — как приложение (PWA, крупные заголовки, стеклянный таббар, шторки),
 на компьютере — дашборд в стиле референса Donezo в цветах easyapps.
 API — `team-api` из `easyapps-web-server` (его карта —
@@ -31,7 +32,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Конструктор поста | `features/media/composer` — `PostComposerHost` → `PostComposerSheet` → `PostComposer`; `model.ts`, `hooks/usePostActions.ts` | открывается `?post=<id>` или `?post=new&date=` |
 | Медиатека | `features/media/library` + очередь загрузок `media/hooks/uploadQueue.ts` | файл грузится и после закрытия окна |
 | Лента и аналитика | `features/media/feed`, `features/media/analytics` (recharts) | графики — только в этих страницах |
-| Площадки | `features/media/settings` — форма по `fields` с сервера, вход MTProto, хранилище, фоновые задачи | |
+| Площадки | `features/media/settings` — форма по `fields` с сервера, вход MTProto, хранилище, фоновые задачи; общий аккаунт Higgsfield — `HiggsfieldCard` + `hooks/useHiggsfieldActions.ts` (вход, «Доступ команды», инструменты, кто сколько генерировал) | вход в Higgsfield возвращает на страницу с `?higgsfield=connected` или `error&message=` — тост и чистка адреса в `MediaSettingsPage` |
+| Конвейер роликов | `features/pipeline` — `PipelineIndexPage` (один конвейер — сразу в него), `PipelinePage` (вкладки `tabs/` — обзор, каст, библиотека, ролики, журнал; адрес `/pipeline/<проект>/<вкладка>`, слои `?cell=`, `?video=`, `?hero=` — `hooks/usePipelineParams.ts`), состояние — `hooks/usePipelineData.ts` (раз в 20 с), действия — `hooks/usePipelineActions.ts` (клип, кадр и лист — с прогрессом), вид — `lib/pipelineMeta.ts`, типы файлов — `lib/mediaFiles.ts` | «готово» у клетки считает сервер по клипу в S3; ссылки на видео стабильны внутри часа — опрос их не перезагружает |
 | Агенты: журнал | `features/agents/journal` — `JournalPage` (живые работы, по дням, фильтры в адресе `useJournalFilters`) | без фильтра лента — закрытые работы, живые — блоком сверху |
 | Агенты: разбор | `features/agents/review` — `JournalReviewPage`, `ReviewItemsCard`, `PeopleCard`, `DaysCard` | сутки разбора — UTC, как вся статистика |
 | Агенты и плагин | `features/agents/connect` — `AgentsPage`, `ConnectWizard` (агент → ключ и промт установки плагина → «Подключено» / «Автожурнал работает»), `KeysCard`, `TeamAgentsCard` | промт и сам плагин собирает сервер; ключ — только по кнопке |
@@ -47,7 +49,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
 - **Слои поверх экрана** — параметры адреса: `?task=EA-42` (карточка задачи),
   `?post=…` (конструктор), `?asset=` (файл медиатеки), `?item=` (пост ленты),
   `?work=<id>` (работа журнала), `?entry=<id>` (запись базы знаний — на её
-  странице). Ссылку можно переслать, «назад» закрывает слой. Окно грузит по
+  странице), `?cell=`, `?video=`, `?hero=` (клетка, ролик и герой — на странице
+  конвейера). Ссылку можно переслать, «назад» закрывает слой. Окно грузит по
   `useLastPresent(id)` — пока оно закрывается, id в адресе уже пуст, а запись
   должна остаться на месте, иначе мелькает «не найдена».
 - **Код слоя — лениво, только когда параметр есть.** `PostComposerHost` и
@@ -90,6 +93,12 @@ API — `team-api` из `easyapps-web-server` (его карта —
    маршрут — `app/routes.tsx` (`lazyPage`).
 2. Пункт навигации — `NAV_SECTIONS` и `MEDIA_TABS` (`app/navigation.ts`).
 3. На телефоне под заголовком — `MediaSectionTabs`.
+
+### Новая вкладка конвейера
+
+1. Имя — `PIPELINE_TABS` (`app/paths.ts`), подпись — `TABS` в `PipelinePage.tsx`.
+2. Вкладка — `features/pipeline/tabs/<Имя>Tab.tsx` на `state` и `lookups` из `usePipelineData`.
+3. Нужно новое поле — сначала `pipeline.state.ts` и YAML в team-api, потом `npm run api`.
 
 ### Новый вид записи журнала
 
