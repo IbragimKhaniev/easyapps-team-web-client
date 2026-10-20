@@ -1,6 +1,7 @@
 import {
   BookMarked,
   Bot,
+  Clapperboard,
   CircleDot,
   CircleHelp,
   MessageSquare,
@@ -45,6 +46,7 @@ export const ENTRY_KIND_META: Record<JournalEntryKind, IKindMeta> = {
   note: { label: 'Заметка', icon: StickyNote, dot: 'bg-zinc-100 text-zinc-600' },
   task: { label: 'Изменение', icon: RefreshCw, dot: 'bg-zinc-100 text-zinc-500' },
   knowledge: { label: 'В базу знаний', icon: BookMarked, dot: 'bg-brand-50 text-brand-800' },
+  pipeline: { label: 'Конвейер роликов', icon: Clapperboard, dot: 'bg-violet-50 text-violet-700' },
 };
 
 export interface IPillMeta {

@@ -74,7 +74,7 @@ export const WorkTimeline = ({ entries, person }: IWorkTimelineProps) => (
         );
       }
 
-      if (entry.kind === JournalEntryKind.task || entry.kind === JournalEntryKind.knowledge) {
+      if (entry.kind === JournalEntryKind.task || entry.kind === JournalEntryKind.knowledge || entry.kind === JournalEntryKind.pipeline) {
         return (
           <li key={entry.id} className="flex items-center gap-2 pl-1 text-[12.5px] text-ink-faint">
             <meta.icon className="h-3.5 w-3.5" />

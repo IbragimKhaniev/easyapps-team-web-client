@@ -4,6 +4,7 @@ import {
   Bot,
   CalendarDays,
   CircleCheckBig,
+  Clapperboard,
   Images,
   LayoutGrid,
   ListTodo,
@@ -49,6 +50,7 @@ export const NAV_SECTIONS: INavSection[] = [
       { to: PATHS.media.library, label: 'Медиатека', icon: Images },
       { to: PATHS.media.feed, label: 'Лента', icon: Newspaper },
       { to: PATHS.media.analytics, label: 'Аналитика', icon: BarChart3 },
+      { to: PATHS.pipeline, label: 'Конвейер роликов', icon: Clapperboard },
     ],
   },
   {
@@ -83,4 +85,5 @@ export const MEDIA_TABS: INavItem[] = [
   { to: PATHS.media.library, label: 'Медиатека', icon: Images },
   { to: PATHS.media.feed, label: 'Лента', icon: Newspaper },
   { to: PATHS.media.analytics, label: 'Аналитика', icon: BarChart3 },
+  { to: PATHS.pipeline, label: 'Конвейер', icon: Clapperboard },
 ];

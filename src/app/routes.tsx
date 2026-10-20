@@ -27,6 +27,8 @@ const JournalPage = lazyPage(() => import('@/features/agents/journal/JournalPage
 const JournalReviewPage = lazyPage(() => import('@/features/agents/review/JournalReviewPage'), 'JournalReviewPage');
 const AgentsPage = lazyPage(() => import('@/features/agents/connect/AgentsPage'), 'AgentsPage');
 const KnowledgePage = lazyPage(() => import('@/features/knowledge/KnowledgePage'), 'KnowledgePage');
+const PipelineIndexPage = lazyPage(() => import('@/features/pipeline/PipelineIndexPage'), 'PipelineIndexPage');
+const PipelinePage = lazyPage(() => import('@/features/pipeline/PipelinePage'), 'PipelinePage');
 
 const PageFallback = () => <div className="skeleton m-4 h-48 rounded-card lg:m-0" />;
 
@@ -53,6 +55,8 @@ const routes: RouteObject[] = [
       { path: PATHS.journalReview, element: page(<JournalReviewPage />) },
       { path: PATHS.agents, element: page(<AgentsPage />) },
       { path: PATHS.knowledge, element: page(<KnowledgePage />) },
+      { path: PATHS.pipeline, element: page(<PipelineIndexPage />) },
+      { path: `${PATHS.pipeline}/:project/:tab?`, element: page(<PipelinePage />) },
       { path: '*', element: <Navigate to={PATHS.overview} replace /> },
     ],
   },
