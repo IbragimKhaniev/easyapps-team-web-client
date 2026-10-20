@@ -50,3 +50,4 @@ git -C /Users/ibrahim/Desktop/dev/easyapps-team-web-client push origin main
 
 Timeweb Apps собирает `main` сам (`npm run build`, `dist`, SPA-фолбэк,
 `VITE_API_BASE_URL=https://team-api.easyapps.click/api`).
+
