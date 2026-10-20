@@ -1,5 +1,5 @@
 <!-- map-covers: src -->
-<!-- map-base: b87b0d8 -->
+<!-- map-base: b9b3a2c -->
 
 # Карта: фронт team.easyapps.click
 
@@ -29,8 +29,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Сводка | `features/overview` (+ `widgets/MediaPulseCard` — ближайшая публикация) | |
 | Медиа: общее | `features/media/lib` — `platforms`, `status`, `format`, `markup`, `rules`, `calendar`, `cache`, `chartTheme`; `features/media/components` | разметка и лимиты — зеркало сервера |
 | Контент-план | `features/media/plan` — `ContentPlanPage`, `MonthGrid` (перетаскивание по дням), `DayPanel`, `CompactMonth` (телефон) | месяц/день/площадка — в адресе |
-| Конструктор поста | `features/media/composer` — `PostComposerHost` → `PostComposerSheet` → `PostComposer`; `model.ts`, `hooks/usePostActions.ts` | открывается `?post=<id>` или `?post=new&date=` |
-| Медиатека | `features/media/library` + очередь загрузок `media/hooks/uploadQueue.ts` | файл грузится и после закрытия окна |
+| Конструктор поста | `features/media/composer` — `PostComposerHost` → `PostComposerSheet` → `PostComposer`; `model.ts`, `hooks/usePostActions.ts` | открывается `?post=<id>` или `?post=new&date=`; `&media=<id>` — новый пост сразу с файлом и его названием (`newPostHref`) |
+| Медиатека | `features/media/library` + очередь загрузок `media/hooks/uploadQueue.ts` | файл грузится и после закрытия окна; ролики конвейера (`source`) — значок с номером, фильтр «Конвейер» (`?source=pipeline`), «Убрать из медиатеки» вместо «Удалить» |
 | Лента и аналитика | `features/media/feed`, `features/media/analytics` (recharts) | графики — только в этих страницах |
 | Площадки | `features/media/settings` — форма по `fields` с сервера, вход MTProto, хранилище, фоновые задачи; общий аккаунт Higgsfield — `HiggsfieldCard` + `hooks/useHiggsfieldActions.ts` (вход, «Доступ команды», инструменты, кто сколько генерировал) | вход в Higgsfield возвращает на страницу с `?higgsfield=connected` или `error&message=` — тост и чистка адреса в `MediaSettingsPage` |
 | Конвейер роликов | `features/pipeline` — `PipelineIndexPage` (один конвейер — сразу в него), `PipelinePage` (вкладки `tabs/` — обзор, каст, библиотека, ролики, журнал; адрес `/pipeline/<проект>/<вкладка>`, слои `?cell=`, `?video=`, `?hero=` — `hooks/usePipelineParams.ts`), состояние — `hooks/usePipelineData.ts` (раз в 20 с), действия — `hooks/usePipelineActions.ts` (клип, кадр и лист — с прогрессом), вид — `lib/pipelineMeta.ts`, типы файлов — `lib/mediaFiles.ts` | «готово» у клетки считает сервер по клипу в S3; ссылки на видео стабильны внутри часа — опрос их не перезагружает |
@@ -62,6 +62,10 @@ API — `team-api` из `easyapps-web-server` (его карта —
   поповеры, на телефоне шторки vaul (`ResponsiveDialog`, `AdaptivePicker`).
 - **Загрузка файла** — `uploadQueue.add`: браузер снимает размеры и кадр видео
   (`lib/fileInfo.ts`), файл идёт через API потоком в S3 с прогрессом.
+- **Ролики конвейера в медиатеке** заводит сервер (сверка team-api), фронт их
+  только показывает: в выборе файлов поста — вкладка «Конвейер», в окне ролика
+  (`VideoSheet`) и в карточке файла — «Запланировать пост» на контент-план с
+  `?media=` и список постов, где файл стоит (`usage` из `getMediaAsset`).
 
 ## Правила, которые нельзя нарушать
 
