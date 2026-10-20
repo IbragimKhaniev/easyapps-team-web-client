@@ -24,4 +24,5 @@ export interface JournalCounts {
   questions: number;
   notes: number;
   tasks: number;
+  knowledge: number;
 }

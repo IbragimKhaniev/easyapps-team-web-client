@@ -16,7 +16,7 @@
 /**
  * prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,
  * result, problem (минус), win (плюс), question, note — пишет агент; task —
- * правка трекера или контент-плана через агента
+ * правка трекера или контент-плана через агента; knowledge — занесено в базу знаний
  */
 export type JournalEntryKind =
   (typeof JournalEntryKind)[keyof typeof JournalEntryKind];
@@ -32,4 +32,5 @@ export const JournalEntryKind = {
   question: "question",
   note: "note",
   task: "task",
+  knowledge: "knowledge",
 } as const;

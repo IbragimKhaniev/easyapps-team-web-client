@@ -291,9 +291,10 @@
           "win",
           "question",
           "note",
-          "task"
+          "task",
+          "knowledge"
         ],
-        "description": "prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,\nresult, problem (минус), win (плюс), question, note — пишет агент; task —\nправка трекера или контент-плана через агента\n"
+        "description": "prompt — запрос человека, reply — ответ агента (оба из хуков); step, decision,\nresult, problem (минус), win (плюс), question, note — пишет агент; task —\nправка трекера или контент-плана через агента; knowledge — занесено в базу знаний\n"
       },
       "JournalEntrySource": {
         "type": "string",
@@ -315,7 +316,8 @@
           "wins",
           "questions",
           "notes",
-          "tasks"
+          "tasks",
+          "knowledge"
         ],
         "properties": {
           "prompts": {
@@ -346,6 +348,9 @@
             "type": "integer"
           },
           "tasks": {
+            "type": "integer"
+          },
+          "knowledge": {
             "type": "integer"
           }
         }
@@ -979,6 +984,448 @@
         "properties": {
           "success": {
             "type": "boolean"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "KnowledgeKind": {
+        "type": "string",
+        "enum": [
+          "rule",
+          "insight",
+          "fact",
+          "howto",
+          "decision",
+          "resource"
+        ],
+        "description": "rule — как у нас принято, insight — вывод (что сработало и почему), fact — цифры и\nданные, howto — инструкция, decision — решение и почему, resource — ссылка или материал\n"
+      },
+      "KnowledgeSection": {
+        "type": "object",
+        "required": [
+          "id",
+          "key",
+          "title",
+          "description",
+          "icon",
+          "color",
+          "order",
+          "archived",
+          "entries",
+          "pinned"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Стабильный ключ для агентов (ads, design)"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Имя значка lucide"
+          },
+          "color": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer",
+            "description": "Живых записей"
+          },
+          "pinned": {
+            "type": "integer",
+            "description": "Из них закреплённых"
+          }
+        }
+      },
+      "KnowledgeLink": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "KnowledgeSource": {
+        "type": "object",
+        "required": [
+          "journalSessionId",
+          "taskId",
+          "taskKey",
+          "client"
+        ],
+        "properties": {
+          "journalSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskId": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "client": {
+            "type": "string",
+            "nullable": true,
+            "description": "Агент, который занёс запись"
+          }
+        }
+      },
+      "KnowledgeEntry": {
+        "type": "object",
+        "required": [
+          "id",
+          "sectionId",
+          "kind",
+          "title",
+          "body",
+          "tags",
+          "links",
+          "pinned",
+          "source",
+          "createdById",
+          "updatedById",
+          "usageCount",
+          "lastUsedAt",
+          "archivedAt",
+          "supersededById",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sectionId": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KnowledgeKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Markdown"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeLink"
+            }
+          },
+          "pinned": {
+            "type": "boolean",
+            "description": "Агенты получают в начале каждой работы"
+          },
+          "source": {
+            "$ref": "#/components/schemas/KnowledgeSource"
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "updatedById": {
+            "type": "string"
+          },
+          "usageCount": {
+            "type": "integer",
+            "description": "Сколько раз агенты взяли запись в работу"
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "supersededById": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateKnowledgeSectionInput": {
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "icon",
+          "color"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateKnowledgeSectionInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateKnowledgeEntryInput": {
+        "type": "object",
+        "required": [
+          "section",
+          "kind",
+          "title"
+        ],
+        "properties": {
+          "section": {
+            "type": "string",
+            "description": "Ключ раздела или id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KnowledgeKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeLink"
+            }
+          },
+          "pinned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateKnowledgeEntryInput": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KnowledgeKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeLink"
+            }
+          },
+          "pinned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArchiveKnowledgeEntryInput": {
+        "type": "object",
+        "properties": {
+          "supersededBy": {
+            "type": "string",
+            "description": "Запись, которая заменила эту"
+          }
+        }
+      },
+      "KnowledgeTag": {
+        "type": "object",
+        "required": [
+          "tag",
+          "count"
+        ],
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "KnowledgeSectionListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeSection"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "KnowledgeSectionResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/KnowledgeSection"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "KnowledgeEntryListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data",
+          "pagination"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeEntry"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "KnowledgeEntryResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/KnowledgeEntry"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "KnowledgeTagListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeTag"
+            }
           },
           "meta": {
             "$ref": "#/components/schemas/ResponseMeta"
@@ -4624,6 +5071,458 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/knowledge/sections": {
+      "get": {
+        "operationId": "listKnowledgeSections",
+        "summary": "Разделы базы знаний",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Разделы с числом записей",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeSectionListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createKnowledgeSection",
+        "summary": "Новый раздел (admin)",
+        "tags": [
+          "Knowledge"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKnowledgeSectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Раздел создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeSectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/knowledge/sections/{id}": {
+      "patch": {
+        "operationId": "updateKnowledgeSection",
+        "summary": "Правка раздела (admin)",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKnowledgeSectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Раздел",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeSectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/knowledge/entries": {
+      "get": {
+        "operationId": "listKnowledgeEntries",
+        "summary": "Записи базы знаний",
+        "description": "Закреплённые и свежие сверху; с q — по смыслу слов (русская морфология).",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "section",
+            "in": "query",
+            "description": "Ключ раздела (ads) или id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "Виды через запятую (rule, insight, fact, howto, decision, resource)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pinned",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Записи",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeEntryListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createKnowledgeEntry",
+        "summary": "Новая запись",
+        "tags": [
+          "Knowledge"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKnowledgeEntryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Запись создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeEntryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/knowledge/entries/{id}": {
+      "get": {
+        "operationId": "getKnowledgeEntry",
+        "summary": "Запись",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Запись",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeEntryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateKnowledgeEntry",
+        "summary": "Правка записи",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKnowledgeEntryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Запись",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeEntryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "archiveKnowledgeEntry",
+        "summary": "В архив (автор или admin)",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveKnowledgeEntryInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "В архиве"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/knowledge/entries/{id}/restore": {
+      "post": {
+        "operationId": "restoreKnowledgeEntry",
+        "summary": "Вернуть из архива",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Запись",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeEntryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/knowledge/tags": {
+      "get": {
+        "operationId": "listKnowledgeTags",
+        "summary": "Частые метки",
+        "tags": [
+          "Knowledge"
+        ],
+        "parameters": [
+          {
+            "name": "section",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Метки с числом записей",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeTagListResponse"
                 }
               }
             }

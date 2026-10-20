@@ -3,6 +3,7 @@ export * from "./agents/agents";
 export * from "./auth/auth";
 export * from "./comments/comments";
 export * from "./journal/journal";
+export * from "./knowledge/knowledge";
 export * from "./labels/labels";
 export * from "./media-analytics/media-analytics";
 export * from "./media-assets/media-assets";
