@@ -1526,7 +1526,8 @@
           "url",
           "thumbnailUrl",
           "uploadedById",
-          "createdAt"
+          "createdAt",
+          "source"
         ],
         "properties": {
           "id": {
@@ -1585,6 +1586,44 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MediaAssetSource"
+              }
+            ],
+            "nullable": true,
+            "description": "Ролик конвейера, показанный в медиатеке без копии файла; null — загружен в медиатеку"
+          }
+        }
+      },
+      "MediaAssetSource": {
+        "type": "object",
+        "required": [
+          "kind",
+          "projectKey",
+          "video",
+          "variant"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "pipeline"
+            ]
+          },
+          "projectKey": {
+            "type": "string",
+            "description": "Ключ конвейера — ссылка /pipeline/<ключ>/videos?video=<номер>"
+          },
+          "video": {
+            "type": "string",
+            "description": "Номер ролика, R-001"
+          },
+          "variant": {
+            "type": "string",
+            "description": "Вариант подписей; основной файл — main"
           }
         }
       },
@@ -3775,7 +3814,8 @@
           "title",
           "captions",
           "file",
-          "cover"
+          "cover",
+          "assetId"
         ],
         "properties": {
           "name": {
@@ -3796,6 +3836,11 @@
           "cover": {
             "type": "string",
             "nullable": true
+          },
+          "assetId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Этот файл в медиатеке — для поста с ним"
           }
         }
       },
@@ -3831,6 +3876,7 @@
           "timeline",
           "file",
           "cover",
+          "assetId",
           "variants",
           "seconds",
           "review",
@@ -3900,6 +3946,11 @@
           "cover": {
             "type": "string",
             "nullable": true
+          },
+          "assetId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Основной файл ролика в медиатеке — для поста с ним"
           },
           "variants": {
             "type": "array",
@@ -7088,6 +7139,18 @@
             "description": "`me` или id участника",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "`upload` — загруженные в медиатеку, `pipeline` — собранные ролики конвейера",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "upload",
+                "pipeline"
+              ]
             }
           },
           {

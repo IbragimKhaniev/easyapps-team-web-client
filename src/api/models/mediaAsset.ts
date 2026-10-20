@@ -12,6 +12,7 @@
  *
  * OpenAPI spec version: 1.0.0
  */
+import type { MediaAssetSource } from "./mediaAssetSource";
 import type { MediaKind } from "./mediaKind";
 
 export interface MediaAsset {
@@ -40,4 +41,6 @@ export interface MediaAsset {
   thumbnailUrl: string | null;
   uploadedById: string;
   createdAt: string;
+  /** Ролик конвейера, показанный в медиатеке без копии файла; null — загружен в медиатеку */
+  source: MediaAssetSource | null;
 }

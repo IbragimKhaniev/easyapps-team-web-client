@@ -13,6 +13,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AssetSort } from "./assetSort";
+import type { ListMediaAssetsSource } from "./listMediaAssetsSource";
 
 export type ListMediaAssetsParams = {
   /**
@@ -28,6 +29,10 @@ export type ListMediaAssetsParams = {
    * `me` или id участника
    */
   uploadedBy?: string;
+  /**
+   * `upload` — загруженные в медиатеку, `pipeline` — собранные ролики конвейера
+   */
+  source?: ListMediaAssetsSource;
   /**
    * Загружен не раньше (YYYY-MM-DD, UTC)
    */

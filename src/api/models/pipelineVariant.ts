@@ -20,4 +20,9 @@ export interface PipelineVariant {
   file: string;
   /** @nullable */
   cover: string | null;
+  /**
+   * Этот файл в медиатеке — для поста с ним
+   * @nullable
+   */
+  assetId: string | null;
 }

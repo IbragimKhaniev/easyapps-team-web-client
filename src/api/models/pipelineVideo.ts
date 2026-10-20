@@ -34,6 +34,11 @@ export interface PipelineVideo {
   file: string | null;
   /** @nullable */
   cover: string | null;
+  /**
+   * Основной файл ролика в медиатеке — для поста с ним
+   * @nullable
+   */
+  assetId: string | null;
   variants: PipelineVariant[];
   /** @nullable */
   seconds: number | null;
