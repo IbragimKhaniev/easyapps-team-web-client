@@ -1,11 +1,12 @@
 <!-- map-covers: src -->
-<!-- map-base: 7a4d135 -->
+<!-- map-base: 6c50b3a -->
 
 # Карта: фронт team.easyapps.click
 
 Рабочее место команды easyapps: трекер задач, медиасистема (контент-план,
 конструктор постов, медиатека, лента площадок, аналитика, «Площадки») и
-агенты — подключение Claude Code и Codex, журнал их работы и разбор. На
+агенты — плагин easyapps-team для Claude Code и Codex, журнал их работы,
+разбор и база знаний по направлениям. На
 iPhone — как приложение (PWA, крупные заголовки, стеклянный таббар, шторки),
 на компьютере — дашборд в стиле референса Donezo в цветах easyapps.
 API — `team-api` из `easyapps-web-server` (его карта —
@@ -33,8 +34,9 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Площадки | `features/media/settings` — форма по `fields` с сервера, вход MTProto, хранилище, фоновые задачи | |
 | Агенты: журнал | `features/agents/journal` — `JournalPage` (живые работы, по дням, фильтры в адресе `useJournalFilters`) | без фильтра лента — закрытые работы, живые — блоком сверху |
 | Агенты: разбор | `features/agents/review` — `JournalReviewPage`, `ReviewItemsCard`, `PeopleCard`, `DaysCard` | сутки разбора — UTC, как вся статистика |
-| Агенты: подключение | `features/agents/connect` — `ConnectWizard` (агент → ключ и промт → «Подключено» / «Автожурнал работает»), `KeysCard`, `TeamAgentsCard` | промт и скилл собирает сервер; ключ — только по кнопке |
+| Агенты и плагин | `features/agents/connect` — `AgentsPage`, `ConnectWizard` (агент → ключ и промт установки плагина → «Подключено» / «Автожурнал работает»), `KeysCard`, `TeamAgentsCard` | промт и сам плагин собирает сервер; ключ — только по кнопке |
 | Работа журнала | `features/agents/components` — `WorkSheet` (`?work=` поверх любого экрана, лениво через `WorkHost`), `WorkCard`, `WorkTimeline`, `WorkBadges`; вид — `features/agents/lib/journalMeta.ts` | живая работа перечитывается раз в 5 с |
+| База знаний | `features/knowledge` — `KnowledgePage` (разделы колонкой с 1280px, уже — чипами; поиск, вид, метка, раздел — в адресе `useKnowledgeParams`), `KnowledgeEntrySheet` (`?entry=`), `KnowledgeEditor`, `SectionsManager` (админ), действия — `hooks/useKnowledgeActions.ts`; вид — `lib/knowledgeMeta.ts` | поиск — на сервере (`$text`, русская морфология) |
 | Агенты в задаче и сводке | вкладка «Агенты» — `tasks/components/detail/TaskWork.tsx` (+ `hooks/useTaskWorkCount.ts`), «через claude-code» в `TaskHistory.tsx`; `overview/widgets/AgentsNowCard.tsx` | |
 
 ## Как это работает
@@ -44,7 +46,10 @@ API — `team-api` из `easyapps-web-server` (его карта —
   4 с, задачи — 5 с, лента — минута.
 - **Слои поверх экрана** — параметры адреса: `?task=EA-42` (карточка задачи),
   `?post=…` (конструктор), `?asset=` (файл медиатеки), `?item=` (пост ленты),
-  `?work=<id>` (работа журнала). Ссылку можно переслать, «назад» закрывает слой.
+  `?work=<id>` (работа журнала), `?entry=<id>` (запись базы знаний — на её
+  странице). Ссылку можно переслать, «назад» закрывает слой. Окно грузит по
+  `useLastPresent(id)` — пока оно закрывается, id в адресе уже пуст, а запись
+  должна остаться на месте, иначе мелькает «не найдена».
 - **Телефон/компьютер** — `useIsDesktop()` (≥1024px): на компьютере диалоги и
   поповеры, на телефоне шторки vaul (`ResponsiveDialog`, `AdaptivePicker`).
 - **Загрузка файла** — `uploadQueue.add`: браузер снимает размеры и кадр видео
@@ -59,6 +64,10 @@ API — `team-api` из `easyapps-web-server` (его карта —
   экранируется целиком до вставки своих тегов, иначе XSS через текст поста.
 - **Даты дней — строками `YYYY-MM-DD`**, арифметика через UTC (`lib/dates.ts`,
   `media/lib/calendar.ts`); момент публикации — `publishMomentOf` (пояс человека).
+- **Иконки разделов базы знаний — зеркало сервера**: `SECTION_ICONS`
+  (`features/knowledge/lib/knowledgeMeta.ts`) ↔ `KNOWLEDGE_SECTION_ICONS`
+  (team-api `constants/knowledge.ts`). Нет иконки во фронте — раздел покажется
+  книгой.
 - **recharts и dnd-kit не в стартовом графе.** Проверка — в `dist/index.html`
   после `npm run build` нет `modulepreload` на `charts-*` и `dnd-*`. Утилиты
   классов — в своём чанке `classnames` (`vite.config.ts`), иначе rollup кладёт
@@ -78,6 +87,11 @@ API — `team-api` из `easyapps-web-server` (его карта —
 Вид приходит из swagger (`JournalEntryKind`); подпись, значок и цвет — в
 `ENTRY_KIND_META` (`features/agents/lib/journalMeta.ts`), особая отрисовка — в
 `WorkTimeline.tsx`.
+
+### Новый вид записи базы знаний
+
+Вид приходит из swagger (`KnowledgeKind`); подпись, подсказка, значок и цвет —
+`KIND_META` и порядок — `KIND_ORDER` (`features/knowledge/lib/knowledgeMeta.ts`).
 
 ### Новое поле API
 
