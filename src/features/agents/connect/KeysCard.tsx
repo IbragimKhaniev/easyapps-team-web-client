@@ -7,6 +7,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/ui/button';
 import { timeAgo } from '@/lib/dates';
 import { apiErrorMessage } from '@/lib/errors';
+import { PluginVersionChip } from '../components/PluginVersionChip';
 import { AGENT_TITLES } from '../lib/journalMeta';
 
 /** Мои ключи агентов — по ключу на компьютер: какой агент, когда работал, идёт ли автожурнал; отозвать. */
@@ -38,7 +39,10 @@ export const KeysCard = () => {
                 <KeyRound className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[14px] font-bold text-ink">{key.name}</div>
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-[14px] font-bold text-ink">{key.name}</span>
+                  {key.lastUsedAt && <PluginVersionChip version={key.pluginVersion} status={key.pluginStatus} />}
+                </div>
                 <div className="truncate text-[12px] text-ink-faint">
                   {AGENT_TITLES[key.client]} · {key.hint}
                   {key.lastClient ? ` · ${key.lastClient}` : ' · ещё не подключался'}

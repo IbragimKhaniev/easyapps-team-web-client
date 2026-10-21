@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { ConnectWizard } from './ConnectWizard';
 import { KeysCard } from './KeysCard';
+import { PluginUpdateBanner } from './PluginUpdateBanner';
 import { TeamAgentsCard } from './TeamAgentsCard';
 
 const HOW_IT_WORKS = [
@@ -34,6 +35,7 @@ export const AgentsPage = () => (
         </Button>
       )}
     />
+    <PluginUpdateBanner />
     <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-12 lg:gap-5 lg:px-0">
       <div className="flex flex-col gap-4 lg:col-span-7 lg:gap-5">
         <ConnectWizard />
