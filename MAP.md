@@ -1,5 +1,5 @@
 <!-- map-covers: src -->
-<!-- map-base: a000037 -->
+<!-- map-base: 9b318a3 -->
 
 # Карта: фронт team.easyapps.click
 
@@ -26,8 +26,9 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Оболочка | `components/layout/AppShell.tsx` (+ Sidebar, Topbar, MobileTabBar, PageHeader) | общие слои: карточка задачи, конструктор поста, загрузки, ⌘K |
 | Клиент API | `api/http.ts` (мутатор orval), `api/generated`, `api/models` — генерируются | руками не править; `npm run api` |
 | Токены дизайна | `tailwind.config.ts`, `index.css` (`card-surface`, `tile-brand`, `tile-deep`, `bg-hatched`) | цвета — шкала `brand` вокруг `#3CC1F6` |
-| Общие компоненты | `components/common` — `Card`, `KpiCard`, `SegmentedControl`, `AdaptivePicker`, `ResponsiveDialog`, `EmptyState` | выбор и окна, родные на обоих экранах |
+| Общие компоненты | `components/common` — `Card`, `KpiCard`, `SegmentedControl`, `AdaptivePicker`, `ResponsiveDialog`, `EmptyState`, `ConfirmDialog` (необратимое: красная кнопка, окно держится, пока действие идёт) | выбор и окна, родные на обоих экранах |
 | Трекер | `features/tasks` (страницы, карточка `TaskSheet` → лениво `detail/TaskDetail` со скелетоном `TaskDetailSkeleton`, доска, пикеры, кэш `lib/cache.ts`) | оптимистичные правки во всех списках |
+| Удаление и очистка (только admin) | архив — `tasks/pages/TaskArchivePage.tsx` (`/tasks/archive`, кнопка «Архив» в «Задачах»), `ArchivedTaskCard`, `TaskPurgeDialog` (галочка «и работы агентов»), действия — `tasks/hooks/useTaskAdminActions.ts`; «Удалить насовсем…» в меню архивной карточки, «Очистить историю» во вкладке «История»; журнал — `agents/hooks/useJournalAdminActions.ts`, `agents/components/DeleteWorkDialog.tsx` (корзина на `WorkCard` и в `WorkSheet`), `agents/journal/PurgeJournalDialog.tsx` («Очистить» на ленте — тем же фильтром, `outcomeFilter`); ключ компьютера — корзина в `connect/TeamAgentsCard.tsx` | кнопки — по `useSession().isAdmin`, сервер проверяет `requireAdmin` сам |
 | Сводка | `features/overview` (+ `widgets/MediaPulseCard` — ближайшая публикация) | |
 | Медиа: общее | `features/media/lib` — `platforms`, `status`, `format`, `markup`, `rules`, `calendar`, `cache`, `chartTheme`; `features/media/components` | разметка и лимиты — зеркало сервера |
 | Контент-план | `features/media/plan` — `ContentPlanPage`, `MonthGrid` (перетаскивание по дням), `DayPanel`, `CompactMonth` (телефон) | месяц/день/площадка — в адресе |
@@ -69,6 +70,9 @@ API — `team-api` из `easyapps-web-server` (его карта —
   только показывает: в выборе файлов поста — вкладка «Конвейер», в окне ролика
   (`VideoSheet`) и в карточке файла — «Запланировать пост» на контент-план с
   `?media=` и список постов, где файл стоит (`usage` из `getMediaAsset`).
+- **После удаления насовсем** перечитываются списки (`refreshTaskViews` — и архив,
+  `refreshJournalViews` — ленты журнала, разбор, «Команда»), а карточку удалённой
+  задачи или работы — нет: она закрывается, а перечитанная мелькнула бы «не найдена».
 
 ## Правила, которые нельзя нарушать
 
@@ -79,6 +83,13 @@ API — `team-api` из `easyapps-web-server` (его карта —
   экранируется целиком до вставки своих тегов, иначе XSS через текст поста.
 - **Даты дней — строками `YYYY-MM-DD`**, арифметика через UTC (`lib/dates.ts`,
   `media/lib/calendar.ts`); момент публикации — `publishMomentOf` (пояс человека).
+- **Окно подтверждения — рядом с кликабельной карточкой, не внутри.** Портал
+  рисует его поверх, но события React всплывают по дереву компонентов: клик в окне,
+  положенном внутрь `WorkCard`, открыл бы и работу. Кнопка на карточке — со
+  `stopPropagation` на клик и на Enter.
+- **Esc у карточки задачи** закрывает панель, только если поверх нет выбора и окна —
+  в проверке `TaskSheet` есть и `[role="alertdialog"]`, иначе Esc в подтверждении
+  закрыл бы и карточку.
 - **Иконки разделов базы знаний — зеркало сервера**: `SECTION_ICONS`
   (`features/knowledge/lib/knowledgeMeta.ts`) ↔ `KNOWLEDGE_SECTION_ICONS`
   (team-api `constants/knowledge.ts`). Нет иконки во фронте — раздел покажется
