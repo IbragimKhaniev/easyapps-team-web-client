@@ -1,11 +1,13 @@
 <!-- map-covers: src -->
-<!-- map-base: ad9f9b5 -->
+<!-- map-base: a000037 -->
 
 # Карта: фронт team.easyapps.click
 
 Рабочее место команды easyapps: трекер задач, медиасистема (контент-план,
 конструктор постов, медиатека, лента площадок, аналитика, «Площадки») и
-агенты — плагин easyapps-team для Claude Code и Codex, журнал их работы,
+агенты — плагин easyapps-team для Claude Code и Codex и коннектор для
+приложений Claude (claude.ai, Desktop, Design, Cowork — вход по OAuth через
+страницу согласия), журнал их работы,
 разбор и база знаний по направлениям; конвейер роликов (каст, библиотека
 клипов, ролики и их проверка) и общий аккаунт Higgsfield команды. На
 iPhone — как приложение (PWA, крупные заголовки, стеклянный таббар, шторки),
@@ -36,7 +38,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Конвейер роликов | `features/pipeline` — `PipelineIndexPage` (один конвейер — сразу в него), `PipelinePage` (вкладки `tabs/` — обзор, каст, библиотека, ролики, журнал; адрес `/pipeline/<проект>/<вкладка>`, слои `?cell=`, `?video=`, `?hero=` — `hooks/usePipelineParams.ts`), состояние — `hooks/usePipelineData.ts` (раз в 20 с), действия — `hooks/usePipelineActions.ts` (клип, кадр и лист — с прогрессом), вид — `lib/pipelineMeta.ts`, типы файлов — `lib/mediaFiles.ts` | «готово» у клетки считает сервер по клипу в S3; ссылки на видео стабильны внутри часа — опрос их не перезагружает |
 | Агенты: журнал | `features/agents/journal` — `JournalPage` (живые работы, по дням, фильтры в адресе `useJournalFilters`) | без фильтра лента — закрытые работы, живые — блоком сверху |
 | Агенты: разбор | `features/agents/review` — `JournalReviewPage`, `ReviewItemsCard`, `PeopleCard`, `DaysCard` | сутки разбора — UTC, как вся статистика |
-| Агенты и плагин | `features/agents/connect` — `AgentsPage`, `ConnectWizard` (кнопка → команда для Терминала с одноразовым кодом → «Плагин на компьютере …» → «Агент подключился» → «Автожурнал работает»; запасной путь — тот же текст агенту), `KeysCard` (ключ — на компьютер, метка версии плагина), `TeamAgentsCard` (версия плагина на каждом компьютере), `PluginUpdateBanner` (устарел мой плагин — команда обновления); метка — `components/PluginVersionChip.tsx`, подписи — `lib/pluginMeta.ts` | команду и скрипт собирает сервер; ключ сайт не видит вовсе — его получает скрипт; «устарела» считает сервер (`pluginStatus`) |
+| Коннектор Claude (OAuth) | `features/agents/connector` — `ConnectorCard` (шаги для Customize → Connectors, адрес с сервера `getAgentConnector`), `ConnectorConsentPage` (`/oauth/consent?request=<id>` — вне `AppShell`: окно входа из Claude; без входа на сайт — на `/login?redirect=` и обратно; «Разрешить»/«Отказать» → браузер в `redirectUrl` приложения; `?error=client\|redirect\|server` — причина, почему вход не дошёл до согласия) | адрес возврата и код считает сервер; loopback — предупреждение; подключение появляется в «Моих ключах» с меткой «коннектор Claude» (`pluginStatus: connector`) |
+| Агенты и плагин | `features/agents/connect` — `AgentsPage`, `ConnectWizard` (кнопка → команда для Терминала с одноразовым кодом → «Плагин на компьютере …» → «Агент подключился» → «Автожурнал работает»; запасной путь — тот же текст агенту), `KeysCard` (ключ — на компьютер, метка версии плагина), `TeamAgentsCard` (версия плагина на каждом компьютере), `PluginUpdateBanner` (устарел мой плагин — команда обновления); метка — `components/PluginVersionChip.tsx`, подписи — `lib/pluginMeta.ts`, плашка с «Скопировать» — `components/CopyBlock.tsx` | команду и скрипт собирает сервер; ключ сайт не видит вовсе — его получает скрипт; «устарела» считает сервер (`pluginStatus`) |
 | Работа журнала | `features/agents/components` — `WorkSheet` (`?work=` поверх любого экрана, лениво через `WorkHost`), `WorkCard`, `WorkTimeline`, `WorkBadges`, `WorkKnowledge` («Знания в работе» — что агент подключил `attach_knowledge`, ссылки в базу знаний); вид — `features/agents/lib/journalMeta.ts` | живая работа перечитывается раз в 5 с |
 | База знаний | `features/knowledge` — `KnowledgePage` (разделы колонкой с 1280px, уже — чипами; поиск, вид, метка, раздел — в адресе `useKnowledgeParams`), `KnowledgeEntrySheet` (`?entry=`), `KnowledgeEditor`, `SectionsManager` (админ), действия — `hooks/useKnowledgeActions.ts`; вид — `lib/knowledgeMeta.ts` | поиск — на сервере (`$text`, русская морфология) |
 | Агенты в задаче и сводке | вкладка «Агенты» — `tasks/components/detail/TaskWork.tsx` (+ `hooks/useTaskWorkCount.ts`), «через claude-code» в `TaskHistory.tsx`; `overview/widgets/AgentsNowCard.tsx` | |
