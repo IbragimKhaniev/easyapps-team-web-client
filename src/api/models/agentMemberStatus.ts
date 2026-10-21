@@ -12,6 +12,7 @@
  *
  * OpenAPI spec version: 1.0.0
  */
+import type { AgentComputer } from "./agentComputer";
 
 export interface AgentMemberStatus {
   userId: string;
@@ -26,4 +27,8 @@ export interface AgentMemberStatus {
   workLast7Days: number;
   /** @nullable */
   lastWorkAt: string | null;
+  /** Компьютеры, где агент работал, — с версией плагина */
+  computers: AgentComputer[];
+  /** Хотя бы на одном компьютере плагин устарел */
+  outdated: boolean;
 }

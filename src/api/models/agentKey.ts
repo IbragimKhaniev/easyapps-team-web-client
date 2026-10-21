@@ -13,6 +13,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AgentClient } from "./agentClient";
+import type { PluginStatus } from "./pluginStatus";
 
 export interface AgentKey {
   id: string;
@@ -37,5 +38,13 @@ export interface AgentKey {
    * @nullable
    */
   host: string | null;
+  /**
+   * Версия плагина easyapps-team на этом компьютере (из хуков и MCP); null — ещё не присылал
+   * @nullable
+   */
+  pluginVersion: string | null;
+  /** @nullable */
+  pluginVersionAt: string | null;
+  pluginStatus: PluginStatus;
   createdAt: string;
 }

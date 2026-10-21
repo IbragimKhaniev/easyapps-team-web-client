@@ -12,11 +12,11 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import type { AgentMemberStatus } from "./agentMemberStatus";
+import type { AgentTeamStatus } from "./agentTeamStatus";
 import type { ResponseMeta } from "./responseMeta";
 
 export interface AgentTeamStatusResponse {
   success: boolean;
-  data: AgentMemberStatus[];
+  data: AgentTeamStatus;
   meta?: ResponseMeta;
 }
