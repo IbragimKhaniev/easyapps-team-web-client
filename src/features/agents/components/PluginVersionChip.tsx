@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, CircleHelp } from 'lucide-react';
+import { CircleAlert, CircleCheck, CircleHelp, Plug } from 'lucide-react';
 
 import { PluginStatus } from '@/api/models';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ const ICONS = {
   [PluginStatus.current]: CircleCheck,
   [PluginStatus.outdated]: CircleAlert,
   [PluginStatus.unknown]: CircleHelp,
+  [PluginStatus.connector]: Plug,
 } as const;
 
 interface IPluginVersionChipProps {

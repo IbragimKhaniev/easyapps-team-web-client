@@ -11,6 +11,8 @@ export const PATHS = {
   agents: '/agents',
   knowledge: '/knowledge',
   pipeline: '/pipeline',
+  /** Согласие на вход приложения по OAuth (коннектор в Claude) — вне оболочки сайта. */
+  oauthConsent: '/oauth/consent',
   media: {
     root: '/media',
     plan: '/media/plan',
@@ -52,6 +54,13 @@ export const WORK_PARAM = 'work';
 
 /** Ссылка на работу журнала: открывается поверх ленты журнала. */
 export const workHref = (id: string): string => `${PATHS.journal}?${WORK_PARAM}=${encodeURIComponent(id)}`;
+
+/**
+ * Страница согласия: `?request=<id>` от сервера входа (`/oauth/authorize`) или
+ * `?error=client|redirect|server`, если вход не дошёл до согласия.
+ */
+export const OAUTH_REQUEST_PARAM = 'request';
+export const OAUTH_ERROR_PARAM = 'error';
 
 /** Запись базы знаний поверх страницы базы: `?entry=<id>`. */
 export const KNOWLEDGE_ENTRY_PARAM = 'entry';

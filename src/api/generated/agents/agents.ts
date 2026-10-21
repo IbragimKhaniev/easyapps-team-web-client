@@ -29,6 +29,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AgentConnectorResponse,
   AgentInstallResponse,
   AgentInstallStartResponse,
   AgentKeyListResponse,
@@ -525,6 +526,161 @@ export function useGetAgentInstall<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetAgentInstallQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+/**
+ * В claude.ai, Claude Desktop, Claude Design и Cowork плагин с ключом из
+ * файла не работает — MCP подключается коннектором по адресу, вход — по
+ * OAuth через этот сайт. Здесь — адрес, который вписать в коннектор.
+ * @summary Коннектор easyapps team для приложений Claude
+ */
+export const getAgentConnector = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<AgentConnectorResponse>(
+    { url: `/agents/connector`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetAgentConnectorQueryKey = () => {
+  return [`/agents/connector`] as const;
+};
+
+export const getGetAgentConnectorQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAgentConnector>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getAgentConnector>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAgentConnectorQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAgentConnector>>
+  > = ({ signal }) => getAgentConnector(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAgentConnector>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetAgentConnectorQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAgentConnector>>
+>;
+export type GetAgentConnectorQueryError = ErrorType<UnauthorizedResponse>;
+
+export function useGetAgentConnector<
+  TData = Awaited<ReturnType<typeof getAgentConnector>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentConnector>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAgentConnector>>,
+          TError,
+          Awaited<ReturnType<typeof getAgentConnector>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAgentConnector<
+  TData = Awaited<ReturnType<typeof getAgentConnector>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentConnector>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAgentConnector>>,
+          TError,
+          Awaited<ReturnType<typeof getAgentConnector>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAgentConnector<
+  TData = Awaited<ReturnType<typeof getAgentConnector>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentConnector>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Коннектор easyapps team для приложений Claude
+ */
+
+export function useGetAgentConnector<
+  TData = Awaited<ReturnType<typeof getAgentConnector>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentConnector>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetAgentConnectorQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

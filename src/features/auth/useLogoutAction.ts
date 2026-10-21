@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLogout } from '@/api/generated/auth/auth';
 import { PATHS } from '@/app/paths';
 
-/** Выход: отзываем сессию на сервере, чистим кэш и уходим на вход. */
-export const useLogoutAction = () => {
+/** Выход: отзываем сессию на сервере, чистим кэш и уходим на вход — после него вернуться на `returnTo`. */
+export const useLogoutAction = (returnTo?: string) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { mutateAsync } = useLogout();
@@ -16,7 +16,7 @@ export const useLogoutAction = () => {
       await mutateAsync();
     } finally {
       queryClient.clear();
-      navigate(PATHS.login, { replace: true });
+      navigate(returnTo ? `${PATHS.login}?redirect=${encodeURIComponent(returnTo)}` : PATHS.login, { replace: true });
     }
-  }, [mutateAsync, navigate, queryClient]);
+  }, [mutateAsync, navigate, queryClient, returnTo]);
 };

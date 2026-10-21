@@ -23,10 +23,12 @@
         "type": "string",
         "enum": [
           "claude-code",
+          "claude",
           "codex",
           "cursor",
           "other"
-        ]
+        ],
+        "description": "claude — приложения Claude (claude.ai, Desktop, Design, Cowork), подключённые коннектором"
       },
       "AgentKey": {
         "type": "object",
@@ -56,7 +58,7 @@
           },
           "hint": {
             "type": "string",
-            "description": "Хвост ключа, «…a1b2»"
+            "description": "Хвост ключа, «…a1b2»; у подключения коннектором — «вход по OAuth»"
           },
           "lastClient": {
             "type": "string",
@@ -247,9 +249,10 @@
         "enum": [
           "current",
           "outdated",
-          "unknown"
+          "unknown",
+          "connector"
         ],
-        "description": "current — последняя версия, outdated — вышла новая (агент попросит обновиться), unknown — версия ещё не приходила"
+        "description": "current — последняя версия, outdated — вышла новая (агент попросит обновиться), unknown — версия ещё не приходила, connector — подключение коннектором Claude (OAuth), плагина нет"
       },
       "AgentComputer": {
         "type": "object",
@@ -389,6 +392,42 @@
           },
           "data": {
             "$ref": "#/components/schemas/AgentTeamStatus"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AgentConnector": {
+        "type": "object",
+        "required": [
+          "name",
+          "url"
+        ],
+        "description": "Коннектор easyapps team для приложений Claude — что вписать в «Add custom connector»",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "easyapps team"
+          },
+          "url": {
+            "type": "string",
+            "description": "Адрес MCP — вписывать ровно его, Claude сверяет его с метаданными буква в букву"
+          }
+        }
+      },
+      "AgentConnectorResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AgentConnector"
           },
           "meta": {
             "$ref": "#/components/schemas/ResponseMeta"
@@ -3509,6 +3548,100 @@
           }
         }
       },
+      "OAuthRequestStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "denied",
+          "expired"
+        ],
+        "description": "pending — ждёт решения, approved — разрешён, denied — отклонён, expired — десять минут прошли"
+      },
+      "OAuthRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "clientName",
+          "redirectHost",
+          "loopback",
+          "expiresAt"
+        ],
+        "description": "Запрос приложения на доступ к easyapps team от имени человека",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OAuthRequestStatus"
+          },
+          "clientName": {
+            "type": "string",
+            "description": "Имя из регистрации — его пишет само приложение, поэтому рядом всегда адрес возврата"
+          },
+          "redirectHost": {
+            "type": "string",
+            "description": "Куда вернётся человек и уйдёт код — «claude.ai», «localhost:54321»"
+          },
+          "loopback": {
+            "type": "boolean",
+            "description": "Возврат на этот компьютер (Claude Code, другие агенты) — на согласии предупреждение"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OAuthRequestResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/OAuthRequest"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "OAuthDecision": {
+        "type": "object",
+        "required": [
+          "redirectUrl"
+        ],
+        "properties": {
+          "redirectUrl": {
+            "type": "string",
+            "description": "Куда отправить браузер — адрес возврата приложения с кодом или с access_denied"
+          }
+        }
+      },
+      "OAuthDecisionResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/OAuthDecision"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
       "PipelineActor": {
         "type": "string",
         "enum": [
@@ -6516,6 +6649,31 @@
         }
       }
     },
+    "/agents/connector": {
+      "get": {
+        "operationId": "getAgentConnector",
+        "summary": "Коннектор easyapps team для приложений Claude",
+        "description": "В claude.ai, Claude Desktop, Claude Design и Cowork плагин с ключом из\nфайла не работает — MCP подключается коннектором по адресу, вход — по\nOAuth через этот сайт. Здесь — адрес, который вписать в коннектор.\n",
+        "tags": [
+          "Agents"
+        ],
+        "responses": {
+          "200": {
+            "description": "Имя и адрес коннектора",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentConnectorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
     "/agents/team": {
       "get": {
         "operationId": "getAgentsTeamStatus",
@@ -8384,6 +8542,135 @@
           },
           "400": {
             "$ref": "#/components/responses/ValidationFailed"
+          }
+        }
+      }
+    },
+    "/oauth/requests/{id}": {
+      "get": {
+        "operationId": "getOAuthRequest",
+        "summary": "Какое приложение просит доступ",
+        "tags": [
+          "OAuth"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Запрос на подключение",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthRequestResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/oauth/requests/{id}/approve": {
+      "post": {
+        "operationId": "approveOAuthRequest",
+        "summary": "Разрешить приложению доступ от моего имени",
+        "description": "Одноразовый код на пять минут уходит в адрес возврата приложения — фронт\nотправляет туда браузер (`redirectUrl`). Приложение меняет код на токены;\nподключение появится в «Моих ключах», отозвать — там же.\n",
+        "tags": [
+          "OAuth"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Куда отправить браузер",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthDecisionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "410": {
+            "description": "Запрос устарел или уже обработан — подключаться заново из Claude",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/requests/{id}/deny": {
+      "post": {
+        "operationId": "denyOAuthRequest",
+        "summary": "Отказать приложению",
+        "tags": [
+          "OAuth"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Куда отправить браузер — в приложение с access_denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthDecisionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "410": {
+            "description": "Запрос устарел или уже обработан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }

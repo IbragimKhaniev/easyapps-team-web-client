@@ -1,4 +1,4 @@
-import { Check, ChevronDown, CircleCheck, CircleX, Copy, Loader2, MessageSquareText, RotateCcw, Terminal } from 'lucide-react';
+import { ChevronDown, CircleCheck, CircleX, Loader2, MessageSquareText, RotateCcw, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -8,6 +8,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage } from '@/lib/errors';
 import { cn } from '@/lib/utils';
+import { CopyBlock } from '../components/CopyBlock';
 import { AGENT_TITLES } from '../lib/journalMeta';
 
 /** Пока ждём запуска команды и подключения агента — состояние перечитывается так часто. */
@@ -24,41 +25,6 @@ const StatusRow = ({ state, children }: { state: TRowState; children: React.Reac
     <span>{children}</span>
   </li>
 );
-
-interface ICopyBlockProps {
-  /** Подпись в шапке плашки: «Терминал», «Сообщение агенту». */
-  caption: string;
-  text: string;
-  done: string;
-  multiline?: boolean;
-}
-
-/** Текст в тёмной плашке; «Скопировать» — в шапке, чтобы не закрывать текст в узкой колонке. */
-const CopyBlock = ({ caption, text, done, multiline = false }: ICopyBlockProps) => {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success(done);
-  };
-  return (
-    <div className="overflow-hidden rounded-2xl bg-ink">
-      <div className="flex items-center justify-between gap-2 border-b border-white/10 py-2 pl-4 pr-2">
-        <span className="text-[12px] font-semibold text-white/50">{caption}</span>
-        <Button variant="white" size="sm" onClick={() => void copy()}>
-          {copied ? <Check /> : <Copy />} {copied ? 'Скопировано' : 'Скопировать'}
-        </Button>
-      </div>
-      <pre className={cn(
-        'overflow-auto px-4 py-3.5 font-mono text-[12.5px] leading-relaxed text-white/90',
-        multiline ? 'max-h-[220px] whitespace-pre-wrap' : 'whitespace-pre-wrap break-all',
-      )}
-      >
-        {text}
-      </pre>
-    </div>
-  );
-};
 
 /**
  * Мастер подключения: одна команда в Терминале. Скрипт на компьютере сам

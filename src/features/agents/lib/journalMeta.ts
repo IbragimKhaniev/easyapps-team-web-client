@@ -73,6 +73,7 @@ export const workPill = (session: Pick<JournalSession, 'status' | 'outcome'>): I
 
 export const AGENT_TITLES: Record<AgentClient, string> = {
   'claude-code': 'Claude Code',
+  claude: 'Claude',
   codex: 'Codex',
   cursor: 'Cursor',
   other: 'Агент',

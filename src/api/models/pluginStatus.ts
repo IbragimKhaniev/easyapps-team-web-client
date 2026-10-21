@@ -14,7 +14,7 @@
  */
 
 /**
- * current — последняя версия, outdated — вышла новая (агент попросит обновиться), unknown — версия ещё не приходила
+ * current — последняя версия, outdated — вышла новая (агент попросит обновиться), unknown — версия ещё не приходила, connector — подключение коннектором Claude (OAuth), плагина нет
  */
 export type PluginStatus = (typeof PluginStatus)[keyof typeof PluginStatus];
 
@@ -22,4 +22,5 @@ export const PluginStatus = {
   current: "current",
   outdated: "outdated",
   unknown: "unknown",
+  connector: "connector",
 } as const;

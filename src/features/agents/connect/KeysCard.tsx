@@ -39,8 +39,9 @@ export const KeysCard = () => {
                 <KeyRound className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate text-[14px] font-bold text-ink">{key.name}</span>
+                {/* Метка — под имя, если в узкой колонке им тесно: имя ключа не должно исчезать. */}
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="max-w-full truncate text-[14px] font-bold text-ink">{key.name}</span>
                   {key.lastUsedAt && <PluginVersionChip version={key.pluginVersion} status={key.pluginStatus} />}
                 </div>
                 <div className="truncate text-[12px] text-ink-faint">

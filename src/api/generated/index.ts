@@ -11,6 +11,7 @@ export * from "./media-assets/media-assets";
 export * from "./media-feed/media-feed";
 export * from "./media-integrations/media-integrations";
 export * from "./media-posts/media-posts";
+export * from "./oauth/oauth";
 export * from "./overview/overview";
 export * from "./pipeline/pipeline";
 export * from "./projects/projects";

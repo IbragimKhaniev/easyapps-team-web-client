@@ -29,6 +29,7 @@ const AgentsPage = lazyPage(() => import('@/features/agents/connect/AgentsPage')
 const KnowledgePage = lazyPage(() => import('@/features/knowledge/KnowledgePage'), 'KnowledgePage');
 const PipelineIndexPage = lazyPage(() => import('@/features/pipeline/PipelineIndexPage'), 'PipelineIndexPage');
 const PipelinePage = lazyPage(() => import('@/features/pipeline/PipelinePage'), 'PipelinePage');
+const ConnectorConsentPage = lazyPage(() => import('@/features/agents/connector/ConnectorConsentPage'), 'ConnectorConsentPage');
 
 const PageFallback = () => <div className="skeleton m-4 h-48 rounded-card lg:m-0" />;
 
@@ -36,6 +37,8 @@ const page = (element: ReactNode) => <Suspense fallback={<PageFallback />}>{elem
 
 const routes: RouteObject[] = [
   { path: PATHS.login, element: <LoginPage /> },
+  // Согласие приложения — без оболочки: открывается окном входа из Claude, вход проверяет сама.
+  { path: PATHS.oauthConsent, element: page(<ConnectorConsentPage />) },
   {
     element: <AppShell />,
     children: [

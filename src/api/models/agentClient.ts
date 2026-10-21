@@ -13,10 +13,14 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * claude — приложения Claude (claude.ai, Desktop, Design, Cowork), подключённые коннектором
+ */
 export type AgentClient = (typeof AgentClient)[keyof typeof AgentClient];
 
 export const AgentClient = {
   "claude-code": "claude-code",
+  claude: "claude",
   codex: "codex",
   cursor: "cursor",
   other: "other",

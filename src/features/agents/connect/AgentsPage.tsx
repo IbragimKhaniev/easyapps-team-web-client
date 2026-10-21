@@ -5,6 +5,7 @@ import { PATHS } from '@/app/paths';
 import { Card } from '@/components/common/Card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
+import { ConnectorCard } from '../connector/ConnectorCard';
 import { ConnectWizard } from './ConnectWizard';
 import { KeysCard } from './KeysCard';
 import { PluginUpdateBanner } from './PluginUpdateBanner';
@@ -21,14 +22,15 @@ const HOW_IT_WORKS = [
 
 /**
  * «Агенты и плагин»: установка плагина одной командой (скрипт сам получает
- * ключ и ставит плагин в Claude Code и Codex), мои ключи и кто в команде уже
- * работает через агента.
+ * ключ и ставит плагин в Claude Code и Codex), коннектор для приложений Claude
+ * (claude.ai, Desktop, Design, Cowork — вход по OAuth), мои ключи и кто в
+ * команде уже работает через агента.
  */
 export const AgentsPage = () => (
   <div className="animate-fade-up">
     <PageHeader
       title="Агенты и плагин"
-      subtitle="Плагин easyapps-team для Claude Code и Codex: агент ведёт журнал, задачи и базу знаний от вашего имени."
+      subtitle="Плагин easyapps-team для Claude Code и Codex и коннектор для приложений Claude: агент ведёт журнал, задачи и базу знаний от вашего имени."
       actions={(
         <Button variant="outline" size="sm" asChild>
           <Link to={PATHS.journal}><NotebookPen /> Журнал</Link>
@@ -39,6 +41,7 @@ export const AgentsPage = () => (
     <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-12 lg:gap-5 lg:px-0">
       <div className="flex flex-col gap-4 lg:col-span-7 lg:gap-5">
         <ConnectWizard />
+        <ConnectorCard />
         <Card title="Как это работает">
           <ul className="flex flex-col gap-3">
             {HOW_IT_WORKS.map((item) => (

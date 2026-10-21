@@ -19,7 +19,7 @@ export interface AgentKey {
   id: string;
   name: string;
   client: AgentClient;
-  /** Хвост ключа, «…a1b2» */
+  /** Хвост ключа, «…a1b2»; у подключения коннектором — «вход по OAuth» */
   hint: string;
   /**
    * Клиент из initialize MCP, «claude-code 2.1.3»; null — агент ещё не подключался
