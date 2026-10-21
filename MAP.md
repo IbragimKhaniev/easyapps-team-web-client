@@ -1,5 +1,5 @@
 <!-- map-covers: src -->
-<!-- map-base: bfe20e3 -->
+<!-- map-base: acf73d7 -->
 
 # Карта: фронт team.easyapps.click
 
@@ -37,7 +37,7 @@ API — `team-api` из `easyapps-web-server` (его карта —
 | Агенты: журнал | `features/agents/journal` — `JournalPage` (живые работы, по дням, фильтры в адресе `useJournalFilters`) | без фильтра лента — закрытые работы, живые — блоком сверху |
 | Агенты: разбор | `features/agents/review` — `JournalReviewPage`, `ReviewItemsCard`, `PeopleCard`, `DaysCard` | сутки разбора — UTC, как вся статистика |
 | Агенты и плагин | `features/agents/connect` — `AgentsPage`, `ConnectWizard` (кнопка → команда для Терминала с одноразовым кодом → «Плагин на компьютере …» → «Агент подключился» → «Автожурнал работает»; запасной путь — тот же текст агенту), `KeysCard` (ключ — на компьютер), `TeamAgentsCard` | команду и скрипт собирает сервер; ключ сайт не видит вовсе — его получает скрипт |
-| Работа журнала | `features/agents/components` — `WorkSheet` (`?work=` поверх любого экрана, лениво через `WorkHost`), `WorkCard`, `WorkTimeline`, `WorkBadges`; вид — `features/agents/lib/journalMeta.ts` | живая работа перечитывается раз в 5 с |
+| Работа журнала | `features/agents/components` — `WorkSheet` (`?work=` поверх любого экрана, лениво через `WorkHost`), `WorkCard`, `WorkTimeline`, `WorkBadges`, `WorkKnowledge` («Знания в работе» — что агент подключил `attach_knowledge`, ссылки в базу знаний); вид — `features/agents/lib/journalMeta.ts` | живая работа перечитывается раз в 5 с |
 | База знаний | `features/knowledge` — `KnowledgePage` (разделы колонкой с 1280px, уже — чипами; поиск, вид, метка, раздел — в адресе `useKnowledgeParams`), `KnowledgeEntrySheet` (`?entry=`), `KnowledgeEditor`, `SectionsManager` (админ), действия — `hooks/useKnowledgeActions.ts`; вид — `lib/knowledgeMeta.ts` | поиск — на сервере (`$text`, русская морфология) |
 | Агенты в задаче и сводке | вкладка «Агенты» — `tasks/components/detail/TaskWork.tsx` (+ `hooks/useTaskWorkCount.ts`), «через claude-code» в `TaskHistory.tsx`; `overview/widgets/AgentsNowCard.tsx` | |
 
