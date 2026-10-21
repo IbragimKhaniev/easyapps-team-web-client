@@ -17,6 +17,7 @@ import { formatDateTime } from '@/lib/dates';
 import { useWorkParam } from '../hooks/useWorkParam';
 import { formatMinutes, isConversationOnly } from '../lib/journalMeta';
 import { AgentBadge, WorkPill } from './WorkBadges';
+import { WorkKnowledge } from './WorkKnowledge';
 import { WorkTimeline } from './WorkTimeline';
 
 /** Пока работа идёт — ход перечитывается сам. */
@@ -148,6 +149,8 @@ export const WorkSheet = () => {
                 </div>
               </section>
             )}
+
+            {work.attachedKnowledge.length > 0 && <WorkKnowledge entries={work.attachedKnowledge} />}
 
             <section className="mt-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
