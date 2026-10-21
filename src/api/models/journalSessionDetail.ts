@@ -13,9 +13,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { JournalEntry } from "./journalEntry";
+import type { JournalKnowledgeRef } from "./journalKnowledgeRef";
 import type { JournalSession } from "./journalSession";
 
 export type JournalSessionDetail = JournalSession & {
   entries: JournalEntry[];
   entriesTruncated: boolean;
+  /** Знания, которые агент подключил к работе (attach_knowledge), по порядку подключения */
+  attachedKnowledge: JournalKnowledgeRef[];
 };

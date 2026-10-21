@@ -13,6 +13,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * agent — работу открыл агент (start_work); hook — работа до 21.10.2026, которую
+ * хук заводил сам из запроса без работы («разговор без задачи»), новых таких нет
+ */
 export type JournalOrigin = (typeof JournalOrigin)[keyof typeof JournalOrigin];
 
 export const JournalOrigin = {

@@ -319,7 +319,8 @@
         "enum": [
           "agent",
           "hook"
-        ]
+        ],
+        "description": "agent — работу открыл агент (start_work); hook — работа до 21.10.2026, которую\nхук заводил сам из запроса без работы («разговор без задачи»), новых таких нет\n"
       },
       "JournalEntryKind": {
         "type": "string",
@@ -632,6 +633,34 @@
           }
         }
       },
+      "JournalKnowledgeRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "sectionId",
+          "archived"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KnowledgeKind"
+          },
+          "sectionId": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "Запись с тех пор ушла в архив"
+          }
+        }
+      },
       "JournalSessionDetail": {
         "allOf": [
           {
@@ -641,7 +670,8 @@
             "type": "object",
             "required": [
               "entries",
-              "entriesTruncated"
+              "entriesTruncated",
+              "attachedKnowledge"
             ],
             "properties": {
               "entries": {
@@ -652,6 +682,13 @@
               },
               "entriesTruncated": {
                 "type": "boolean"
+              },
+              "attachedKnowledge": {
+                "type": "array",
+                "description": "Знания, которые агент подключил к работе (attach_knowledge), по порядку подключения",
+                "items": {
+                  "$ref": "#/components/schemas/JournalKnowledgeRef"
+                }
               }
             }
           }

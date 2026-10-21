@@ -92,6 +92,7 @@ export * from "./journalCounts";
 export * from "./journalEntry";
 export * from "./journalEntryKind";
 export * from "./journalEntrySource";
+export * from "./journalKnowledgeRef";
 export * from "./journalLastEntry";
 export * from "./journalLink";
 export * from "./journalMetric";
