@@ -32,5 +32,10 @@ export interface AgentKey {
    * @nullable
    */
   hooksSeenAt: string | null;
+  /**
+   * Компьютер, на который ключ выдан командой установки
+   * @nullable
+   */
+  host: string | null;
   createdAt: string;
 }

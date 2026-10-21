@@ -28,13 +28,6 @@
           "other"
         ]
       },
-      "ConnectableAgentClient": {
-        "type": "string",
-        "enum": [
-          "claude-code",
-          "codex"
-        ]
-      },
       "AgentKey": {
         "type": "object",
         "required": [
@@ -45,6 +38,7 @@
           "lastClient",
           "lastUsedAt",
           "hooksSeenAt",
+          "host",
           "createdAt"
         ],
         "properties": {
@@ -77,75 +71,105 @@
             "nullable": true,
             "description": "Последнее событие хуков автожурнала"
           },
+          "host": {
+            "type": "string",
+            "nullable": true,
+            "description": "Компьютер, на который ключ выдан командой установки"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
           }
         }
       },
-      "CreateAgentKeyInput": {
-        "type": "object",
-        "required": [
-          "client"
+      "AgentInstallStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "claimed",
+          "expired"
         ],
-        "properties": {
-          "client": {
-            "$ref": "#/components/schemas/ConnectableAgentClient"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 80
-          }
-        }
+        "description": "pending — команду ещё не запускали, claimed — скрипт получил ключ, expired — полчаса прошли"
       },
-      "AgentConnectKit": {
+      "AgentInstall": {
         "type": "object",
         "required": [
-          "client",
-          "mcpUrl",
-          "prompt",
-          "afterSteps"
+          "id",
+          "status",
+          "expiresAt",
+          "claimedAt",
+          "host",
+          "os",
+          "agents",
+          "keyId"
         ],
         "properties": {
-          "client": {
-            "$ref": "#/components/schemas/ConnectableAgentClient"
-          },
-          "mcpUrl": {
+          "id": {
             "type": "string"
           },
-          "prompt": {
-            "type": "string",
-            "description": "Промт подключения — человек отправляет его своему агенту"
+          "status": {
+            "$ref": "#/components/schemas/AgentInstallStatus"
           },
-          "afterSteps": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "claimedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "host": {
+            "type": "string",
+            "nullable": true,
+            "description": "Имя компьютера из скрипта"
+          },
+          "os": {
+            "type": "string",
+            "nullable": true,
+            "description": "Darwin, Linux"
+          },
+          "agents": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "$ref": "#/components/schemas/AgentClient"
+            },
+            "description": "Какие агенты скрипт нашёл на компьютере"
+          },
+          "keyId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ключ, выданный при обмене кода"
           }
         }
       },
-      "CreatedAgentKey": {
+      "AgentInstallStart": {
         "type": "object",
         "required": [
-          "key",
-          "secret",
-          "connect"
+          "install",
+          "command",
+          "agentPrompt",
+          "updateCommand"
         ],
         "properties": {
-          "key": {
-            "$ref": "#/components/schemas/AgentKey"
+          "install": {
+            "$ref": "#/components/schemas/AgentInstall"
           },
-          "secret": {
+          "command": {
             "type": "string",
-            "description": "Значение ключа — только в этом ответе"
+            "description": "Команда для Терминала с одноразовым кодом"
           },
-          "connect": {
-            "$ref": "#/components/schemas/AgentConnectKit"
+          "agentPrompt": {
+            "type": "string",
+            "description": "То же для агента, если терминала под рукой нет; ключа в тексте нет"
+          },
+          "updateCommand": {
+            "type": "string",
+            "description": "Обновление плагина потом — команда без кода"
           }
         }
       },
-      "CreatedAgentKeyResponse": {
+      "AgentInstallStartResponse": {
         "type": "object",
         "required": [
           "success",
@@ -156,7 +180,25 @@
             "type": "boolean"
           },
           "data": {
-            "$ref": "#/components/schemas/CreatedAgentKey"
+            "$ref": "#/components/schemas/AgentInstallStart"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "AgentInstallResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AgentInstall"
           },
           "meta": {
             "$ref": "#/components/schemas/ResponseMeta"
@@ -6244,42 +6286,6 @@
             "$ref": "#/components/responses/Unauthorized"
           }
         }
-      },
-      "post": {
-        "operationId": "createAgentKey",
-        "summary": "Новый ключ агента и промт подключения",
-        "description": "Значение ключа (`secret`) приходит только в этом ответе и уже вставлено в\nпромт подключения. Прежние ключи того же агента, которыми ни разу не\nпользовались, отзываются.\n",
-        "tags": [
-          "Agents"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAgentKeyInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Ключ создан",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreatedAgentKeyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationFailed"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          }
-        }
       }
     },
     "/agents/keys/{id}": {
@@ -6302,6 +6308,68 @@
         "responses": {
           "204": {
             "description": "Отозван"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/agents/install": {
+      "post": {
+        "operationId": "startAgentInstall",
+        "summary": "Команда установки плагина с одноразовым кодом",
+        "description": "`curl -fsSL …/agent-kit/install/<код> | sh` — скрипт на компьютере сам\nменяет код на ключ агента (ключ не проходит через экран и переписку) и\nставит плагин в Claude Code и Codex. Код живёт полчаса и срабатывает один\nраз; прежние неиспользованные коды человека удаляются.\n",
+        "tags": [
+          "Agents"
+        ],
+        "responses": {
+          "201": {
+            "description": "Команда выдана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentInstallStartResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/agents/install/{id}": {
+      "get": {
+        "operationId": "getAgentInstall",
+        "summary": "Дошла ли установка до компьютера",
+        "tags": [
+          "Agents"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние установки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentInstallResponse"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"

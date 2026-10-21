@@ -12,12 +12,11 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import type { ConnectableAgentClient } from "./connectableAgentClient";
+import type { AgentInstall } from "./agentInstall";
+import type { ResponseMeta } from "./responseMeta";
 
-export interface AgentConnectKit {
-  client: ConnectableAgentClient;
-  mcpUrl: string;
-  /** Промт подключения — человек отправляет его своему агенту */
-  prompt: string;
-  afterSteps: string[];
+export interface AgentInstallResponse {
+  success: boolean;
+  data: AgentInstall;
+  meta?: ResponseMeta;
 }

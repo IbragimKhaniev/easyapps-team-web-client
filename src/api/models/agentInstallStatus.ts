@@ -13,10 +13,14 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ConnectableAgentClient =
-  (typeof ConnectableAgentClient)[keyof typeof ConnectableAgentClient];
+/**
+ * pending — команду ещё не запускали, claimed — скрипт получил ключ, expired — полчаса прошли
+ */
+export type AgentInstallStatus =
+  (typeof AgentInstallStatus)[keyof typeof AgentInstallStatus];
 
-export const ConnectableAgentClient = {
-  "claude-code": "claude-code",
-  codex: "codex",
+export const AgentInstallStatus = {
+  pending: "pending",
+  claimed: "claimed",
+  expired: "expired",
 } as const;

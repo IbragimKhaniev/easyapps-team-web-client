@@ -12,10 +12,14 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import type { ConnectableAgentClient } from "./connectableAgentClient";
+import type { AgentInstall } from "./agentInstall";
 
-export interface CreateAgentKeyInput {
-  client: ConnectableAgentClient;
-  /** @maxLength 80 */
-  name?: string;
+export interface AgentInstallStart {
+  install: AgentInstall;
+  /** Команда для Терминала с одноразовым кодом */
+  command: string;
+  /** То же для агента, если терминала под рукой нет; ключа в тексте нет */
+  agentPrompt: string;
+  /** Обновление плагина потом — команда без кода */
+  updateCommand: string;
 }

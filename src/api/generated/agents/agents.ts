@@ -29,17 +29,16 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AgentInstallResponse,
+  AgentInstallStartResponse,
   AgentKeyListResponse,
   AgentTeamStatusResponse,
-  CreateAgentKeyInput,
-  CreatedAgentKeyResponse,
   NotFoundResponse,
   UnauthorizedResponse,
-  ValidationFailedResponse,
 } from "../../models";
 
 import { customInstance } from "../../http";
-import type { ErrorType, BodyType } from "../../http";
+import type { ErrorType } from "../../http";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -194,105 +193,6 @@ export function useListAgentKeys<
 }
 
 /**
- * Значение ключа (`secret`) приходит только в этом ответе и уже вставлено в
- * промт подключения. Прежние ключи того же агента, которыми ни разу не
- * пользовались, отзываются.
- * @summary Новый ключ агента и промт подключения
- */
-export const createAgentKey = (
-  createAgentKeyInput: BodyType<CreateAgentKeyInput>,
-  options?: SecondParameter<typeof customInstance>,
-  signal?: AbortSignal,
-) => {
-  return customInstance<CreatedAgentKeyResponse>(
-    {
-      url: `/agents/keys`,
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      data: createAgentKeyInput,
-      signal,
-    },
-    options,
-  );
-};
-
-export const getCreateAgentKeyMutationKey = () => ["createAgentKey"] as const;
-
-export const getCreateAgentKeyMutationOptions = <
-  TError = ErrorType<ValidationFailedResponse | UnauthorizedResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAgentKey>>,
-    TError,
-    CreateAgentKeyMutationVariables,
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createAgentKey>>,
-  TError,
-  CreateAgentKeyMutationVariables,
-  TContext
-> => {
-  const mutationKey = getCreateAgentKeyMutationKey();
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createAgentKey>>,
-    CreateAgentKeyMutationVariables
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return createAgentKey(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type CreateAgentKeyMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createAgentKey>>
->;
-export type CreateAgentKeyMutationBody = BodyType<CreateAgentKeyInput>;
-export type CreateAgentKeyMutationError = ErrorType<
-  ValidationFailedResponse | UnauthorizedResponse
->;
-export type CreateAgentKeyMutationVariables = {
-  data: BodyType<CreateAgentKeyInput>;
-};
-
-/**
- * @summary Новый ключ агента и промт подключения
- */
-export const useCreateAgentKey = <
-  TError = ErrorType<ValidationFailedResponse | UnauthorizedResponse>,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createAgentKey>>,
-      TError,
-      CreateAgentKeyMutationVariables,
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof createAgentKey>>,
-  TError,
-  CreateAgentKeyMutationVariables,
-  TContext
-> => {
-  return useMutation(getCreateAgentKeyMutationOptions(options), queryClient);
-};
-/**
  * @summary Отозвать свой ключ агента
  */
 export const revokeAgentKey = (
@@ -380,6 +280,260 @@ export const useRevokeAgentKey = <
 > => {
   return useMutation(getRevokeAgentKeyMutationOptions(options), queryClient);
 };
+/**
+ * `curl -fsSL …/agent-kit/install/<код> | sh` — скрипт на компьютере сам
+ * меняет код на ключ агента (ключ не проходит через экран и переписку) и
+ * ставит плагин в Claude Code и Codex. Код живёт полчаса и срабатывает один
+ * раз; прежние неиспользованные коды человека удаляются.
+ * @summary Команда установки плагина с одноразовым кодом
+ */
+export const startAgentInstall = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<AgentInstallStartResponse>(
+    { url: `/agents/install`, method: "POST", signal },
+    options,
+  );
+};
+
+export const getStartAgentInstallMutationKey = () =>
+  ["startAgentInstall"] as const;
+
+export const getStartAgentInstallMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startAgentInstall>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startAgentInstall>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = getStartAgentInstallMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startAgentInstall>>,
+    void
+  > = () => {
+    return startAgentInstall(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartAgentInstallMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startAgentInstall>>
+>;
+
+export type StartAgentInstallMutationError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Команда установки плагина с одноразовым кодом
+ */
+export const useStartAgentInstall = <
+  TError = ErrorType<UnauthorizedResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof startAgentInstall>>,
+      TError,
+      void,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof startAgentInstall>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getStartAgentInstallMutationOptions(options), queryClient);
+};
+/**
+ * @summary Дошла ли установка до компьютера
+ */
+export const getAgentInstall = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<AgentInstallResponse>(
+    { url: `/agents/install/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetAgentInstallQueryKey = (id: string) => {
+  return [`/agents/install/${id}`] as const;
+};
+
+export const getGetAgentInstallQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAgentInstall>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentInstall>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAgentInstallQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAgentInstall>>> = ({
+    signal,
+  }) => getAgentInstall(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAgentInstall>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetAgentInstallQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAgentInstall>>
+>;
+export type GetAgentInstallQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+export function useGetAgentInstall<
+  TData = Awaited<ReturnType<typeof getAgentInstall>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentInstall>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAgentInstall>>,
+          TError,
+          Awaited<ReturnType<typeof getAgentInstall>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAgentInstall<
+  TData = Awaited<ReturnType<typeof getAgentInstall>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentInstall>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAgentInstall>>,
+          TError,
+          Awaited<ReturnType<typeof getAgentInstall>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAgentInstall<
+  TData = Awaited<ReturnType<typeof getAgentInstall>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentInstall>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Дошла ли установка до компьютера
+ */
+
+export function useGetAgentInstall<
+  TData = Awaited<ReturnType<typeof getAgentInstall>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAgentInstall>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetAgentInstallQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 /**
  * Кто подключил агента, когда он работал и сколько работ в журнале.
  * @summary Подключение агентов в команде

@@ -12,11 +12,11 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import type { CreatedAgentKey } from "./createdAgentKey";
+import type { AgentInstallStart } from "./agentInstallStart";
 import type { ResponseMeta } from "./responseMeta";
 
-export interface CreatedAgentKeyResponse {
+export interface AgentInstallStartResponse {
   success: boolean;
-  data: CreatedAgentKey;
+  data: AgentInstallStart;
   meta?: ResponseMeta;
 }
