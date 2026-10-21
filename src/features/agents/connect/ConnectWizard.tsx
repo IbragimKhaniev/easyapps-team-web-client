@@ -1,144 +1,175 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { Bot, Check, CircleCheck, Copy, KeyRound, Loader2, RotateCcw, ShieldAlert, Terminal } from 'lucide-react';
+import { Check, ChevronDown, CircleCheck, CircleX, Copy, Loader2, MessageSquareText, RotateCcw, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { getListAgentKeysQueryKey, useCreateAgentKey, useListAgentKeys } from '@/api/generated/agents/agents';
-import { ConnectableAgentClient, type CreatedAgentKey } from '@/api/models';
+import { useGetAgentInstall, useListAgentKeys, useStartAgentInstall } from '@/api/generated/agents/agents';
+import { AgentInstallStatus, type AgentInstallStart } from '@/api/models';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage } from '@/lib/errors';
 import { cn } from '@/lib/utils';
+import { AGENT_TITLES } from '../lib/journalMeta';
 
-/** Пока ждём подключения — список ключей перечитывается так часто. */
-const WAIT_REFRESH_MS = 4_000;
+/** Пока ждём запуска команды и подключения агента — состояние перечитывается так часто. */
+const WAIT_REFRESH_MS = 3_000;
 
-const AGENTS: Array<{ value: ConnectableAgentClient; title: string; hint: string; icon: typeof Bot }> = [
-  { value: ConnectableAgentClient['claude-code'], title: 'Claude Code', hint: 'Приложение Claude (вкладка Code) или терминал', icon: Bot },
-  { value: ConnectableAgentClient.codex, title: 'Codex', hint: 'Приложение Codex или терминал', icon: Terminal },
-];
+type TRowState = 'done' | 'waiting' | 'idle' | 'failed';
 
-const StatusRow = ({ done, waiting, children }: { done: boolean; waiting: boolean; children: React.ReactNode }) => (
-  <li className={cn('flex items-center gap-2.5 text-[14px]', done ? 'font-semibold text-ink' : 'text-ink-muted')}>
-    {done ? <CircleCheck className="h-5 w-5 text-emerald-600" /> : waiting ? <Loader2 className="h-5 w-5 animate-spin text-brand-700" /> : <span className="h-5 w-5 rounded-full border-2 border-black/10" />}
-    {children}
+const StatusRow = ({ state, children }: { state: TRowState; children: React.ReactNode }) => (
+  <li className={cn('flex items-start gap-2.5 text-[14px] leading-snug', state === 'done' ? 'font-semibold text-ink' : state === 'failed' ? 'text-rose-700' : 'text-ink-muted')}>
+    {state === 'done' && <CircleCheck className="h-5 w-5 shrink-0 text-emerald-600" />}
+    {state === 'waiting' && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-brand-700" />}
+    {state === 'failed' && <CircleX className="h-5 w-5 shrink-0 text-rose-600" />}
+    {state === 'idle' && <span className="h-5 w-5 shrink-0 rounded-full border-2 border-black/10" />}
+    <span>{children}</span>
   </li>
 );
 
+interface ICopyBlockProps {
+  /** Подпись в шапке плашки: «Терминал», «Сообщение агенту». */
+  caption: string;
+  text: string;
+  done: string;
+  multiline?: boolean;
+}
+
+/** Текст в тёмной плашке; «Скопировать» — в шапке, чтобы не закрывать текст в узкой колонке. */
+const CopyBlock = ({ caption, text, done, multiline = false }: ICopyBlockProps) => {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success(done);
+  };
+  return (
+    <div className="overflow-hidden rounded-2xl bg-ink">
+      <div className="flex items-center justify-between gap-2 border-b border-white/10 py-2 pl-4 pr-2">
+        <span className="text-[12px] font-semibold text-white/50">{caption}</span>
+        <Button variant="white" size="sm" onClick={() => void copy()}>
+          {copied ? <Check /> : <Copy />} {copied ? 'Скопировано' : 'Скопировать'}
+        </Button>
+      </div>
+      <pre className={cn(
+        'overflow-auto px-4 py-3.5 font-mono text-[12.5px] leading-relaxed text-white/90',
+        multiline ? 'max-h-[220px] whitespace-pre-wrap' : 'whitespace-pre-wrap break-all',
+      )}
+      >
+        {text}
+      </pre>
+    </div>
+  );
+};
+
 /**
- * Мастер подключения: выбрать агента → получить промт (в нём личный ключ) →
- * отправить его агенту → увидеть «Подключено» и «Автожурнал работает». Ключ
- * создаётся только по кнопке: открыть страницу — не значит выпустить ключ.
+ * Мастер подключения: одна команда в Терминале. Скрипт на компьютере сам
+ * меняет одноразовый код на ключ агента и ставит плагин easyapps-team в Claude
+ * Code и Codex — ключ не показывается и не уходит в переписку. Дальше мастер
+ * видит, на какой компьютер встал плагин, подключился ли агент и идёт ли
+ * автожурнал. Команда выдаётся только по кнопке.
  */
 export const ConnectWizard = () => {
-  const queryClient = useQueryClient();
-  const [agent, setAgent] = useState<ConnectableAgentClient | null>(null);
-  const [created, setCreated] = useState<CreatedAgentKey | null>(null);
-  const [copied, setCopied] = useState(false);
-  const createKey = useCreateAgentKey();
+  const start = useStartAgentInstall();
+  const [started, setStarted] = useState<AgentInstallStart | null>(null);
+  const [promptOpen, setPromptOpen] = useState(false);
 
-  const waiting = Boolean(created);
-  const { data: keys } = useListAgentKeys({ query: { refetchInterval: waiting ? WAIT_REFRESH_MS : false } });
-  const current = created ? keys?.data.find((key) => key.id === created.key.id) ?? created.key : null;
-  const connected = Boolean(current?.lastClient);
-  const hooks = Boolean(current?.hooksSeenAt);
+  const { data: installData } = useGetAgentInstall(started?.install.id ?? '', {
+    query: {
+      enabled: Boolean(started),
+      refetchInterval: (query) => (query.state.data?.data.status === AgentInstallStatus.pending ? WAIT_REFRESH_MS : false),
+    },
+  });
+  const install = installData?.data ?? started?.install ?? null;
+  const claimed = install?.status === AgentInstallStatus.claimed;
+  const expired = install?.status === AgentInstallStatus.expired;
 
-  const create = async () => {
-    if (!agent) return;
+  const { data: keys } = useListAgentKeys({
+    query: { refetchInterval: (query) => (claimed && !query.state.data?.data.find((key) => key.id === install?.keyId)?.hooksSeenAt ? WAIT_REFRESH_MS : false) },
+  });
+  const key = claimed ? keys?.data.find((item) => item.id === install?.keyId) : undefined;
+  const connected = Boolean(key?.lastClient);
+  const hooks = Boolean(key?.hooksSeenAt);
+  const agents = install?.agents.map((agent) => AGENT_TITLES[agent]).join(' и ');
+
+  const begin = async () => {
     try {
-      const result = await createKey.mutateAsync({ data: { client: agent } });
-      setCreated(result.data);
-      setCopied(false);
-      await queryClient.invalidateQueries({ queryKey: getListAgentKeysQueryKey() });
+      const result = await start.mutateAsync();
+      setStarted(result.data);
+      setPromptOpen(false);
     } catch (error) {
-      toast.error(apiErrorMessage(error, 'Не удалось выпустить ключ'));
+      toast.error(apiErrorMessage(error, 'Не удалось выдать команду установки'));
     }
   };
 
-  const copy = async () => {
-    if (!created) return;
-    await navigator.clipboard.writeText(created.connect.prompt);
-    setCopied(true);
-    toast.success('Промт скопирован — отправьте его агенту');
-  };
-
-  if (!created) {
+  if (!started) {
     return (
-      <Card title="Какой у вас агент?">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {AGENTS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setAgent(item.value)}
-              aria-pressed={agent === item.value}
-              className={cn(
-                'relative flex items-start gap-3 rounded-2xl border p-4 text-left transition-all',
-                agent === item.value ? 'border-brand-300 bg-brand-50/70 shadow-card' : 'border-black/[0.07] hover:border-black/15',
-              )}
-            >
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink text-white">
-                <item.icon className="h-5 w-5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[16px] font-bold text-ink">{item.title}</span>
-                <span className="mt-0.5 block text-[13px] leading-snug text-ink-muted">{item.hint}</span>
-              </span>
-              {agent === item.value && (
-                <span className="absolute right-3 top-3 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
-                  <Check className="h-3 w-3" />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-        <p className="mt-4 text-[13px] leading-relaxed text-ink-muted">
-          Агент сам поставит плагин easyapps-team: сервер команды, скиллы, команды /easyapps-team:… и хуки. В каждом разговоре
-          у агента будут ваши задачи и правила из базы знаний, работа для easyapps пойдёт в журнал, задачи обновятся по ходу,
-          а выводы осядут в базе знаний.
+      <Card title="Подключить компьютер">
+        <p className="text-[14px] leading-relaxed text-ink-soft">
+          Одна команда в Терминале — и у Claude Code и Codex на этом компьютере появится плагин easyapps-team: сервер команды,
+          скиллы, команды /easyapps-team:… и автожурнал. В каждом разговоре агент получит ваши задачи и правила из базы знаний,
+          работа для easyapps пойдёт в журнал. Ключ агента скрипт получит и сохранит сам — копировать его не нужно.
         </p>
-        <Button className="mt-4" size="lg" disabled={!agent || createKey.isPending} onClick={() => void create()}>
-          {createKey.isPending ? <Loader2 className="animate-spin" /> : <KeyRound />} Показать промт подключения
+        <Button className="mt-4" size="lg" disabled={start.isPending} onClick={() => void begin()}>
+          {start.isPending ? <Loader2 className="animate-spin" /> : <Terminal />} Показать команду установки
         </Button>
+        <p className="mt-3 text-[12.5px] text-ink-faint">macOS и Linux. Повторный запуск безопасен — так же плагин и обновляется.</p>
       </Card>
     );
   }
 
   return (
     <Card
-      title={`Подключение ${AGENTS.find((item) => item.value === created.connect.client)?.title ?? ''}`}
+      title="Установка одной командой"
       action={(
-        <Button variant="ghost" size="sm" onClick={() => setCreated(null)}>
-          <RotateCcw /> Другой агент
+        <Button variant="ghost" size="sm" disabled={start.isPending} onClick={() => void begin()}>
+          <RotateCcw /> Новая команда
         </Button>
       )}
     >
-      <div className="flex items-start gap-2 rounded-2xl bg-amber-50 px-4 py-3 text-[13px] leading-snug text-amber-900">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-        В промте ваш личный ключ ({created.key.hint}). Не пересылайте его и не публикуйте — по нему агент действует от вашего имени.
-      </div>
-
-      <div className="relative mt-4">
-        <pre className="max-h-[340px] overflow-auto whitespace-pre-wrap rounded-2xl bg-ink p-4 pr-28 font-mono text-[12px] leading-relaxed text-white/90">
-          {created.connect.prompt}
-        </pre>
-        <Button variant="white" size="sm" className="absolute right-3 top-3" onClick={() => void copy()}>
-          {copied ? <Check /> : <Copy />} {copied ? 'Скопировано' : 'Скопировать'}
-        </Button>
-      </div>
-
-      <ol className="mt-4 flex list-decimal flex-col gap-1.5 pl-5 text-[14px] leading-snug text-ink-soft">
-        {created.connect.afterSteps.map((step) => <li key={step}>{step}</li>)}
-      </ol>
+      <p className="mb-3 text-[14px] leading-snug text-ink-soft">
+        Откройте Терминал (на Mac: <b>⌘ Пробел</b> → «Терминал»), вставьте команду и нажмите <b>Enter</b>:
+      </p>
+      <CopyBlock caption="Терминал" text={started.command} done="Команда скопирована — вставьте её в Терминал" />
+      <p className="mt-2 text-[12.5px] leading-snug text-ink-faint">
+        Команда одноразовая и действует 30 минут: в ней код, который скрипт сам обменяет на ваш ключ. Ключ не покажется ни здесь, ни в Терминале.
+      </p>
 
       <ul className="mt-5 flex flex-col gap-2.5 rounded-2xl bg-secondary p-4">
-        <StatusRow done={connected} waiting={!connected}>
-          {connected ? `Подключено: ${current?.lastClient}` : 'Ждём, когда агент подключится к серверу команды…'}
+        <StatusRow state={claimed ? 'done' : expired ? 'failed' : 'waiting'}>
+          {claimed
+            ? `Плагин на компьютере${install?.host ? ` «${install.host}»` : ''}${agents ? ` — для ${agents}` : ' — агентов скрипт не нашёл: поставьте Claude Code или Codex и запустите обновление'}`
+            : expired ? 'Команда устарела — нажмите «Новая команда»' : 'Ждём, когда команда запустится на компьютере…'}
         </StatusRow>
-        <StatusRow done={hooks} waiting={connected && !hooks}>
+        <StatusRow state={connected ? 'done' : claimed ? 'waiting' : 'idle'}>
+          {connected ? `Агент подключился: ${key?.lastClient}` : 'Откройте новый чат в Claude Code или Codex и напишите «проверь easyapps team»'}
+        </StatusRow>
+        <StatusRow state={hooks ? 'done' : connected ? 'waiting' : 'idle'}>
           {hooks ? 'Автожурнал работает: запросы и ответы попадают в журнал' : 'Автожурнал включится после первого запроса агенту'}
         </StatusRow>
       </ul>
+
+      <button
+        type="button"
+        onClick={() => setPromptOpen(!promptOpen)}
+        className="mt-4 flex items-center gap-1.5 text-[13.5px] font-semibold text-brand-800"
+        aria-expanded={promptOpen}
+      >
+        <MessageSquareText className="h-4 w-4" /> Нет под рукой терминала? Попросите агента
+        <ChevronDown className={cn('h-4 w-4 transition', promptOpen && 'rotate-180')} />
+      </button>
+      {promptOpen && (
+        <div className="mt-2 flex flex-col gap-2">
+          <p className="text-[13px] leading-snug text-ink-muted">
+            Отправьте это Claude Code или Codex — агент выполнит ту же команду сам. Ключа в тексте нет. Если у агента нет сети или
+            доступа к домашней папке (так бывает в облачных средах), он скажет об этом — тогда запустите команду в Терминале.
+          </p>
+          <CopyBlock caption="Сообщение агенту" text={started.agentPrompt} done="Текст скопирован — отправьте его агенту" multiline />
+        </div>
+      )}
+
+      <p className="mt-4 text-[12.5px] leading-snug text-ink-faint">
+        Обновить плагин потом — та же команда без кода: <code className="break-all rounded bg-secondary px-1 py-0.5 text-ink-soft">{started.updateCommand}</code>,
+        или скажите агенту «обнови плагин easyapps team».
+      </p>
     </Card>
   );
 };

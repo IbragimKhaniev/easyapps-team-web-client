@@ -9,7 +9,7 @@ import { timeAgo } from '@/lib/dates';
 import { apiErrorMessage } from '@/lib/errors';
 import { AGENT_TITLES } from '../lib/journalMeta';
 
-/** Мои ключи агентов: какой агент, когда работал, идёт ли автожурнал; отозвать. */
+/** Мои ключи агентов — по ключу на компьютер: какой агент, когда работал, идёт ли автожурнал; отозвать. */
 export const KeysCard = () => {
   const queryClient = useQueryClient();
   const { data, isLoading } = useListAgentKeys();
@@ -53,7 +53,7 @@ export const KeysCard = () => {
           ))}
         </ul>
       ) : (
-        <p className="text-[13.5px] text-ink-muted">Ключей нет — выпустите первый в мастере подключения.</p>
+        <p className="text-[13.5px] text-ink-muted">Ключей нет — подключите компьютер командой установки.</p>
       )}
     </Card>
   );
