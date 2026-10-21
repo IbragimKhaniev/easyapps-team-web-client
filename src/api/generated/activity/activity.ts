@@ -12,22 +12,27 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
 import type {
+  ActivityClearResponse,
   ActivityFeedResponse,
   ActivityListResponse,
+  ForbiddenResponse,
   GetActivityFeedParams,
   NotFoundResponse,
 } from "../../models";
@@ -220,6 +225,97 @@ export function useListTaskActivity<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+/**
+ * Стирает всю ленту «История» в карточке задачи — и её строки в «что
+ * нового» сводки. Задача, комментарии и работы агентов не меняются.
+ * @summary Очистить историю задачи (admin)
+ */
+export const clearTaskActivity = (
+  key: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ActivityClearResponse>(
+    { url: `/tasks/${key}/activity`, method: "DELETE", signal },
+    options,
+  );
+};
+
+export const getClearTaskActivityMutationKey = () =>
+  ["clearTaskActivity"] as const;
+
+export const getClearTaskActivityMutationOptions = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof clearTaskActivity>>,
+    TError,
+    ClearTaskActivityMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof clearTaskActivity>>,
+  TError,
+  ClearTaskActivityMutationVariables,
+  TContext
+> => {
+  const mutationKey = getClearTaskActivityMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof clearTaskActivity>>,
+    ClearTaskActivityMutationVariables
+  > = (props) => {
+    const { key } = props ?? {};
+
+    return clearTaskActivity(key, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ClearTaskActivityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof clearTaskActivity>>
+>;
+
+export type ClearTaskActivityMutationError = ErrorType<
+  ForbiddenResponse | NotFoundResponse
+>;
+export type ClearTaskActivityMutationVariables = { key: string };
+
+/**
+ * @summary Очистить историю задачи (admin)
+ */
+export const useClearTaskActivity = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof clearTaskActivity>>,
+      TError,
+      ClearTaskActivityMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof clearTaskActivity>>,
+  TError,
+  ClearTaskActivityMutationVariables,
+  TContext
+> => {
+  return useMutation(getClearTaskActivityMutationOptions(options), queryClient);
+};
 /**
  * @summary Лента изменений команды
  */

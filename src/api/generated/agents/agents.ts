@@ -34,6 +34,7 @@ import type {
   AgentInstallStartResponse,
   AgentKeyListResponse,
   AgentTeamStatusResponse,
+  ForbiddenResponse,
   NotFoundResponse,
   UnauthorizedResponse,
 } from "../../models";
@@ -842,3 +843,100 @@ export function useGetAgentsTeamStatus<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+/**
+ * Ключ любого участника — компьютер из «Команды» (`keyId`). Агент на нём
+ * теряет доступ на следующем вызове, подключение коннектором Claude
+ * закрывается (токены OAuth удаляются), буфер автожурнала и коды установки
+ * этого ключа — тоже. Работы журнала остаются.
+ * @summary Удалить ключ агента насовсем (admin)
+ */
+export const removeTeamAgentKey = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<void>(
+    { url: `/agents/team/keys/${id}`, method: "DELETE", signal },
+    options,
+  );
+};
+
+export const getRemoveTeamAgentKeyMutationKey = () =>
+  ["removeTeamAgentKey"] as const;
+
+export const getRemoveTeamAgentKeyMutationOptions = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeTeamAgentKey>>,
+    TError,
+    RemoveTeamAgentKeyMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeTeamAgentKey>>,
+  TError,
+  RemoveTeamAgentKeyMutationVariables,
+  TContext
+> => {
+  const mutationKey = getRemoveTeamAgentKeyMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeTeamAgentKey>>,
+    RemoveTeamAgentKeyMutationVariables
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return removeTeamAgentKey(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveTeamAgentKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeTeamAgentKey>>
+>;
+
+export type RemoveTeamAgentKeyMutationError = ErrorType<
+  ForbiddenResponse | NotFoundResponse
+>;
+export type RemoveTeamAgentKeyMutationVariables = { id: string };
+
+/**
+ * @summary Удалить ключ агента насовсем (admin)
+ */
+export const useRemoveTeamAgentKey = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof removeTeamAgentKey>>,
+      TError,
+      RemoveTeamAgentKeyMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof removeTeamAgentKey>>,
+  TError,
+  RemoveTeamAgentKeyMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getRemoveTeamAgentKeyMutationOptions(options),
+    queryClient,
+  );
+};

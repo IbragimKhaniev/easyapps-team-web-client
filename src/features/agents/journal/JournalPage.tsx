@@ -1,9 +1,9 @@
-import { Bot, NotebookPen, Scale, Search } from 'lucide-react';
+import { Bot, Eraser, NotebookPen, Scale, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useListJournalSessions } from '@/api/generated/journal/journal';
-import type { JournalSession, ListJournalSessionsParams } from '@/api/models';
+import type { JournalSession, ListJournalSessionsParams, PurgeJournalSessionsBody } from '@/api/models';
 import { PATHS } from '@/app/paths';
 import { EmptyState } from '@/components/common/EmptyState';
 import { MemberAvatar } from '@/components/common/MemberAvatar';
@@ -14,10 +14,12 @@ import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useMembers } from '@/hooks/useDirectory';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { useSession } from '@/hooks/useSession';
 import { addDaysIso, formatLongDate, todayIso } from '@/lib/dates';
 import { pluralize, WORK_FORMS } from '@/lib/plural';
 import { cn } from '@/lib/utils';
 import { WorkCard } from '../components/WorkCard';
+import { PurgeJournalDialog } from './PurgeJournalDialog';
 import { OUTCOME_FILTERS, PERIOD_FILTERS, TOutcomeFilter, useJournalFilters } from './useJournalFilters';
 
 const LIVE_REFRESH_MS = 10_000;
@@ -26,11 +28,20 @@ const PAGE_SIZE = 30;
 const FEED_MAX = 100;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Фильтр исхода → параметры ленты. Без фильтра — только закрытые: живые работы — в блоке выше. */
+/**
+ * Фильтр исхода → статусы и исходы ленты. Без фильтра — только закрытые: живые
+ * работы — в блоке выше. Тем же отбором администратор очищает журнал.
+ */
+const outcomeFilter = (outcome: TOutcomeFilter): Pick<PurgeJournalSessionsBody, 'status' | 'outcome'> => {
+  if (outcome === 'all') return { status: ['finished', 'abandoned'] };
+  if (outcome === 'abandoned') return { status: ['abandoned'] };
+  return { status: ['finished'], outcome: [outcome] };
+};
+
+/** Тот же отбор — параметрами ленты (через запятую). */
 const outcomeParams = (outcome: TOutcomeFilter): Pick<ListJournalSessionsParams, 'status' | 'outcome'> => {
-  if (outcome === 'all') return { status: 'finished,abandoned' };
-  if (outcome === 'abandoned') return { status: 'abandoned' };
-  return { status: 'finished', outcome };
+  const { status, outcome: outcomes } = outcomeFilter(outcome);
+  return { status: status?.join(','), ...(outcomes ? { outcome: outcomes.join(',') } : {}) };
 };
 
 /** Работы по дням начала — в часовом поясе человека. */
@@ -77,11 +88,13 @@ const LiveWork = () => {
  */
 export const JournalPage = () => {
   const isDesktop = useIsDesktop();
-  const { list: members } = useMembers();
+  const { isAdmin } = useSession();
+  const { list: members, map: memberMap } = useMembers();
   const { userId, outcome, period, q, update } = useJournalFilters();
   const [query, setQuery] = useState(q);
   const debounced = useDebounce(query.trim(), SEARCH_DEBOUNCE_MS);
   const [limit, setLimit] = useState(PAGE_SIZE);
+  const [purging, setPurging] = useState(false);
 
   useEffect(() => {
     update({ q: debounced || null });
@@ -97,10 +110,26 @@ export const JournalPage = () => {
     ...outcomeParams(outcome),
     limit,
   };
-  const { data, isLoading } = useListJournalSessions(params, { query: { refetchInterval: FEED_REFRESH_MS, placeholderData: (previous) => previous } });
+  const { data, isLoading, isPlaceholderData } = useListJournalSessions(params, { query: { refetchInterval: FEED_REFRESH_MS, placeholderData: (previous) => previous } });
   const sessions = useMemo(() => data?.data ?? [], [data]);
   const total = data?.pagination.totalItems ?? 0;
   const days = useMemo(() => groupByDay(sessions), [sessions]);
+
+  // Очистка журнала — ровно то, что сейчас в ленте: тот же период, человек, исход и поиск.
+  const purgeBody: PurgeJournalSessionsBody = {
+    from: params.from,
+    to: params.to,
+    ...(userId ? { userId } : {}),
+    ...(q ? { q } : {}),
+    ...outcomeFilter(outcome),
+  };
+  const periodLabel = PERIOD_FILTERS.find((item) => item.value === period)?.label;
+  const purgeScope = [
+    periodLabel ? `за ${periodLabel}` : null,
+    userId ? memberMap.get(userId)?.name ?? 'человек' : null,
+    outcome !== 'all' ? OUTCOME_FILTERS.find((item) => item.value === outcome)?.label : null,
+    q ? `«${q}»` : null,
+  ].filter(Boolean).join(' · ');
 
   const headerActions = (
     <>
@@ -150,9 +179,24 @@ export const JournalPage = () => {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
               <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Поиск по цели и итогу" className="h-9 rounded-full bg-white pl-9" />
             </label>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                // Пока лента догружает новый фильтр, число — от прошлого: чистить по нему нельзя.
+                disabled={!total || isPlaceholderData}
+                onClick={() => setPurging(true)}
+                title="Удалить насовсем закрытые работы под этим фильтром"
+              >
+                <Eraser /> Очистить{total ? ` · ${total}` : ''}
+              </Button>
+            )}
           </div>
         </div>
       </PageHeader>
+
+      {isAdmin && <PurgeJournalDialog open={purging} onOpenChange={setPurging} body={purgeBody} total={total} scope={purgeScope} />}
 
       <div className="flex flex-col gap-6">
         {outcome === 'all' && !q && <LiveWork />}

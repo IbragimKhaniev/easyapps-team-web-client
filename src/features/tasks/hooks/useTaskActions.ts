@@ -118,11 +118,13 @@ export const useTaskActions = () => {
   );
 
   const restoreTask = useCallback(
-    async (key: string): Promise<void> => {
+    async (key: string): Promise<boolean> => {
       try {
         await restore.mutateAsync({ key });
+        return true;
       } catch (error) {
         toast.error(apiErrorMessage(error, 'Не удалось вернуть задачу'));
+        return false;
       } finally {
         refreshTaskViews(queryClient, key);
       }

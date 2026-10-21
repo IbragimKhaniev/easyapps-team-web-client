@@ -33,8 +33,8 @@ export const TaskSheet = () => {
   useEffect(() => {
     if (!openKey || !isDesktop) return;
     const onKey = (event: KeyboardEvent) => {
-      // Esc закрывает панель, только если поверх неё не открыт выбор или диалог.
-      const overlayOpen = document.querySelector('[data-radix-popper-content-wrapper], [role="dialog"]:not([data-task-panel])');
+      // Esc закрывает панель, только если поверх неё не открыт выбор или диалог (и подтверждение — alertdialog).
+      const overlayOpen = document.querySelector('[data-radix-popper-content-wrapper], [role="dialog"]:not([data-task-panel]), [role="alertdialog"]');
       if (event.key === 'Escape' && !overlayOpen) closeTask();
     };
     window.addEventListener('keydown', onKey);

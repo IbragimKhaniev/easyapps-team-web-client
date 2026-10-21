@@ -27,3 +27,5 @@ export const GENERATION_FORMS = ['генерация', 'генерации', 'г
 export const STEP_FORMS = ['шаг', 'шага', 'шагов'] as const;
 export const PROMPT_FORMS = ['запрос', 'запроса', 'запросов'] as const;
 export const WORK_FORMS = ['работа', 'работы', 'работ'] as const;
+export const ENTRY_FORMS = ['запись', 'записи', 'записей'] as const;
+export const HISTORY_FORMS = ['запись истории', 'записи истории', 'записей истории'] as const;

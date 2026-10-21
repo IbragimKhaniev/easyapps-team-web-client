@@ -1,4 +1,4 @@
-import { Archive, Link2, MoreHorizontal, RotateCcw, X } from 'lucide-react';
+import { Archive, Link2, MoreHorizontal, RotateCcw, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -14,12 +14,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSession } from '@/hooks/useSession';
 import { timeAgo } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 import { useTaskActions } from '../../hooks/useTaskActions';
 import { useTaskRowContext } from '../../hooks/useTaskRowContext';
 import { useTaskWorkCount } from '../../hooks/useTaskWorkCount';
 import { ProjectBadge } from '../ProjectBadge';
+import { TaskPurgeDialog } from '../TaskPurgeDialog';
 import { TaskChecklist } from './TaskChecklist';
 import { TaskComments } from './TaskComments';
 import { TaskDescription } from './TaskDescription';
@@ -46,7 +48,9 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
   const { data, isLoading, isError } = useGetTask(taskKey);
   const context = useTaskRowContext();
   const { updateTask, restoreTask } = useTaskActions();
+  const { isAdmin } = useSession();
   const [tab, setTab] = useState('comments');
+  const [purging, setPurging] = useState(false);
   const task = data?.data;
   const workCount = useTaskWorkCount(taskKey);
 
@@ -87,9 +91,16 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {task.archivedAt ? (
-                <DropdownMenuItem onSelect={() => void restoreTask(task.key)}>
-                  <RotateCcw className="mr-2 h-4 w-4" /> Вернуть из архива
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onSelect={() => void restoreTask(task.key)}>
+                    <RotateCcw className="mr-2 h-4 w-4" /> Вернуть из архива
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onSelect={() => setPurging(true)} className="text-rose-600">
+                      <Trash2 className="mr-2 h-4 w-4" /> Удалить насовсем…
+                    </DropdownMenuItem>
+                  )}
+                </>
               ) : (
                 <DropdownMenuItem onSelect={() => void archive()} className="text-rose-600">
                   <Archive className="mr-2 h-4 w-4" /> В архив
@@ -146,6 +157,10 @@ export const TaskDetail = ({ taskKey, onClose }: ITaskDetailProps) => {
           Создана {timeAgo(task.createdAt)} · обновлена {timeAgo(task.updatedAt)}
         </p>
       </div>
+
+      {isAdmin && task.archivedAt && (
+        <TaskPurgeDialog open={purging} onOpenChange={setPurging} task={task} worksCount={workCount} onPurged={onClose} />
+      )}
     </div>
   );
 };

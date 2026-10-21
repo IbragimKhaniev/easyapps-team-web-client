@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, FolderOpen, Link2, Sparkles, TriangleAlert, X } from 'lucide-react';
+import { ArrowRight, Clock, FolderOpen, Link2, Sparkles, Trash2, TriangleAlert, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -13,9 +13,11 @@ import { Button } from '@/components/ui/button';
 import { useTaskParam } from '@/features/tasks/hooks/useTaskParam';
 import { useMembers } from '@/hooks/useDirectory';
 import { useLastPresent } from '@/hooks/useLastPresent';
+import { useSession } from '@/hooks/useSession';
 import { formatDateTime } from '@/lib/dates';
 import { useWorkParam } from '../hooks/useWorkParam';
 import { formatMinutes, isConversationOnly } from '../lib/journalMeta';
+import { DeleteWorkDialog } from './DeleteWorkDialog';
 import { AgentBadge, WorkPill } from './WorkBadges';
 import { WorkKnowledge } from './WorkKnowledge';
 import { WorkTimeline } from './WorkTimeline';
@@ -57,7 +59,9 @@ export const WorkSheet = () => {
   const { openId, closeWork } = useWorkParam();
   const { openTask } = useTaskParam();
   const { map: members } = useMembers();
+  const { isAdmin } = useSession();
   const [filter, setFilter] = useState<TTimelineFilter>('all');
+  const [deleting, setDeleting] = useState(false);
   const shownId = useLastPresent(openId);
   const { data, isLoading, isError } = useGetJournalSession(shownId ?? '', {
     query: {
@@ -105,10 +109,23 @@ export const WorkSheet = () => {
               <Button variant="ghost" size="icon-sm" onClick={() => void copyLink()} aria-label="Скопировать ссылку" title="Скопировать ссылку">
                 <Link2 />
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="hover:bg-rose-50 hover:text-rose-600"
+                  onClick={() => setDeleting(true)}
+                  aria-label="Удалить работу"
+                  title="Удалить работу"
+                >
+                  <Trash2 />
+                </Button>
+              )}
               <Button variant="soft" size="icon-sm" onClick={closeWork} aria-label="Закрыть">
                 <X />
               </Button>
             </div>
+            {isAdmin && <DeleteWorkDialog open={deleting} onOpenChange={setDeleting} work={work} onDeleted={closeWork} />}
           </header>
 
           <div className="flex-1 overflow-y-auto px-5 pb-8 pt-4 lg:px-6">

@@ -4,6 +4,8 @@ export const PATHS = {
   overview: '/',
   myTasks: '/my',
   tasks: '/tasks',
+  /** Архив задач — только администратору: вернуть или удалить насовсем. */
+  tasksArchive: '/tasks/archive',
   settings: '/settings',
   more: '/more',
   journal: '/journal',

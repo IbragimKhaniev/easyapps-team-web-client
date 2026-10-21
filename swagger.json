@@ -875,6 +875,88 @@
           }
         }
       },
+      "PurgeJournalSessionsBody": {
+        "type": "object",
+        "description": "Фильтр ленты журнала — очищаются только закрытые работы",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Работа начата не раньше (YYYY-MM-DD, UTC)"
+          },
+          "to": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string",
+            "description": "Ключ задачи (EA-42)"
+          },
+          "status": {
+            "type": "array",
+            "description": "Без него — и с итогом, и «без итога»",
+            "items": {
+              "type": "string",
+              "enum": [
+                "finished",
+                "abandoned"
+              ]
+            }
+          },
+          "outcome": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JournalOutcome"
+            }
+          },
+          "client": {
+            "$ref": "#/components/schemas/AgentClient"
+          },
+          "q": {
+            "type": "string",
+            "description": "Поиск по цели и итогу"
+          }
+        }
+      },
+      "JournalPurgeResult": {
+        "type": "object",
+        "required": [
+          "sessions",
+          "entries"
+        ],
+        "properties": {
+          "sessions": {
+            "type": "integer",
+            "description": "Работ удалено"
+          },
+          "entries": {
+            "type": "integer",
+            "description": "Записей хода удалено"
+          }
+        }
+      },
+      "JournalPurgeResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/JournalPurgeResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
       "JournalOutcomeCounts": {
         "type": "object",
         "required": [
@@ -5815,6 +5897,143 @@
           }
         }
       },
+      "ArchivedTask": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Task"
+          },
+          {
+            "type": "object",
+            "required": [
+              "archivedById",
+              "descriptionPreview",
+              "worksCount",
+              "historyCount"
+            ],
+            "properties": {
+              "archivedById": {
+                "type": "string",
+                "nullable": true,
+                "description": "Кто убрал задачу в архив"
+              },
+              "descriptionPreview": {
+                "type": "string",
+                "description": "Начало описания одной строкой, без разметки"
+              },
+              "worksCount": {
+                "type": "integer",
+                "description": "Работ агентов над задачей в журнале"
+              },
+              "historyCount": {
+                "type": "integer",
+                "description": "Записей в истории задачи"
+              }
+            }
+          }
+        ]
+      },
+      "ArchivedTaskList": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "truncated"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArchivedTask"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "В архиве больше задач, чем `limit`"
+          }
+        }
+      },
+      "ArchivedTaskListResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ArchivedTaskList"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "TaskPurgeResult": {
+        "type": "object",
+        "description": "Что ушло вместе с задачей",
+        "required": [
+          "key",
+          "comments",
+          "history",
+          "worksDeleted",
+          "entriesDeleted",
+          "worksDetached",
+          "knowledgeUnlinked"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "EA-42"
+          },
+          "comments": {
+            "type": "integer",
+            "description": "Комментариев удалено (с уже удалёнными)"
+          },
+          "history": {
+            "type": "integer",
+            "description": "Записей истории удалено"
+          },
+          "worksDeleted": {
+            "type": "integer",
+            "description": "Работ агентов удалено вместе с задачей"
+          },
+          "entriesDeleted": {
+            "type": "integer",
+            "description": "Записей хода этих работ"
+          },
+          "worksDetached": {
+            "type": "integer",
+            "description": "Работ агентов, оставленных в журнале без задачи (`withWork=false`)"
+          },
+          "knowledgeUnlinked": {
+            "type": "integer",
+            "description": "Записей базы знаний, у которых снята ссылка «из задачи»"
+          }
+        }
+      },
+      "TaskPurgeResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TaskPurgeResult"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
       "ChecklistItemInput": {
         "type": "object",
         "required": [
@@ -6201,6 +6420,36 @@
             "items": {
               "$ref": "#/components/schemas/ActivityFeedItem"
             }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "ActivityClearResult": {
+        "type": "object",
+        "required": [
+          "history"
+        ],
+        "properties": {
+          "history": {
+            "type": "integer",
+            "description": "Записей истории стёрто"
+          }
+        }
+      },
+      "ActivityClearResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ActivityClearResult"
           },
           "meta": {
             "$ref": "#/components/schemas/ResponseMeta"
@@ -6699,6 +6948,37 @@
         }
       }
     },
+    "/agents/team/keys/{id}": {
+      "delete": {
+        "operationId": "removeTeamAgentKey",
+        "summary": "Удалить ключ агента насовсем (admin)",
+        "description": "Ключ любого участника — компьютер из «Команды» (`keyId`). Агент на нём\nтеряет доступ на следующем вызове, подключение коннектором Claude\nзакрывается (токены OAuth удаляются), буфер автожурнала и коды установки\nэтого ключа — тоже. Работы журнала остаются.\n",
+        "tags": [
+          "Agents"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Удалён"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/journal/sessions": {
       "get": {
         "operationId": "listJournalSessions",
@@ -6814,6 +7094,44 @@
         }
       }
     },
+    "/journal/sessions/purge": {
+      "post": {
+        "operationId": "purgeJournalSessions",
+        "summary": "Очистить журнал (admin)",
+        "description": "Удаляет насовсем закрытые работы под фильтром ленты (те же поля, что у\nсписка) со всеми записями хода. Живые работы так не удаляются — только\nпо одной. Ссылки на удалённые работы в истории задач, знаниях и учёте\nHiggsfield снимаются.\n",
+        "tags": [
+          "Journal"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeJournalSessionsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Сколько удалено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalPurgeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/journal/sessions/{id}": {
       "get": {
         "operationId": "getJournalSession",
@@ -6845,6 +7163,42 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteJournalSession",
+        "summary": "Удалить работу со всем ходом (admin)",
+        "description": "Работа и все её записи — насовсем, в том числе живая: агент на следующем\n`log_work` получит «работа не найдена» и откроет новую. Задача остаётся.\n",
+        "tags": [
+          "Journal"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Удалена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalPurgeResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -9492,6 +9846,108 @@
         }
       }
     },
+    "/tasks/archive": {
+      "get": {
+        "operationId": "listArchivedTasks",
+        "summary": "Архив задач (admin)",
+        "description": "Задачи в архиве, новые в архиве сверху: кто и когда убрал, начало\nописания и что уйдёт вместе с задачей при удалении насовсем — работы\nагентов и история (комментарии — `commentsCount`). Только администратор.\n",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "name": "project",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Поиск — ключ `EA-42`, номер или подстрока названия",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задачи в архиве",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchivedTaskListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/tasks/archive/{key}": {
+      "delete": {
+        "operationId": "purgeTask",
+        "summary": "Удалить задачу из архива насовсем (admin)",
+        "description": "Только задачу из архива (живую — 400: сначала в архив). Вместе с ней\nудаляются комментарии и история; работы агентов над ней — тоже, а с\n`withWork=false` остаются в журнале без задачи. Знания, занесённые из\nзадачи, остаются — снимается только ссылка на неё. Отменить нельзя.\n",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskKeyParam"
+          },
+          {
+            "name": "withWork",
+            "in": "query",
+            "description": "Удалить и работы агентов над задачей (по умолчанию да)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Удалена — что ушло вместе с ней",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskPurgeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/tasks/{key}": {
       "get": {
         "operationId": "getTask",
@@ -9767,6 +10223,37 @@
                 }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "clearTaskActivity",
+        "summary": "Очистить историю задачи (admin)",
+        "description": "Стирает всю ленту «История» в карточке задачи — и её строки в «что\nнового» сводки. Задача, комментарии и работы агентов не меняются.\n",
+        "tags": [
+          "Activity"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskKeyParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Очищена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityClearResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"

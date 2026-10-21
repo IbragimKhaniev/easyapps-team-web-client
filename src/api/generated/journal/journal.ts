@@ -12,32 +12,38 @@
  *
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
 import type {
+  ForbiddenResponse,
   GetJournalReviewParams,
+  JournalPurgeResponse,
   JournalReviewResponse,
   JournalSessionDetailResponse,
   JournalSessionListResponse,
   ListJournalSessionsParams,
   NotFoundResponse,
+  PurgeJournalSessionsBody,
   UnauthorizedResponse,
   ValidationFailedResponse,
 } from "../../models";
 
 import { customInstance } from "../../http";
-import type { ErrorType } from "../../http";
+import type { ErrorType, BodyType } from "../../http";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -226,6 +232,111 @@ export function useListJournalSessions<
 }
 
 /**
+ * Удаляет насовсем закрытые работы под фильтром ленты (те же поля, что у
+ * списка) со всеми записями хода. Живые работы так не удаляются — только
+ * по одной. Ссылки на удалённые работы в истории задач, знаниях и учёте
+ * Higgsfield снимаются.
+ * @summary Очистить журнал (admin)
+ */
+export const purgeJournalSessions = (
+  purgeJournalSessionsBody: BodyType<PurgeJournalSessionsBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<JournalPurgeResponse>(
+    {
+      url: `/journal/sessions/purge`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: purgeJournalSessionsBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPurgeJournalSessionsMutationKey = () =>
+  ["purgeJournalSessions"] as const;
+
+export const getPurgeJournalSessionsMutationOptions = <
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof purgeJournalSessions>>,
+    TError,
+    PurgeJournalSessionsMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof purgeJournalSessions>>,
+  TError,
+  PurgeJournalSessionsMutationVariables,
+  TContext
+> => {
+  const mutationKey = getPurgeJournalSessionsMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof purgeJournalSessions>>,
+    PurgeJournalSessionsMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return purgeJournalSessions(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PurgeJournalSessionsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof purgeJournalSessions>>
+>;
+export type PurgeJournalSessionsMutationBody =
+  BodyType<PurgeJournalSessionsBody>;
+export type PurgeJournalSessionsMutationError = ErrorType<
+  ValidationFailedResponse | ForbiddenResponse
+>;
+export type PurgeJournalSessionsMutationVariables = {
+  data: BodyType<PurgeJournalSessionsBody>;
+};
+
+/**
+ * @summary Очистить журнал (admin)
+ */
+export const usePurgeJournalSessions = <
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof purgeJournalSessions>>,
+      TError,
+      PurgeJournalSessionsMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof purgeJournalSessions>>,
+  TError,
+  PurgeJournalSessionsMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getPurgeJournalSessionsMutationOptions(options),
+    queryClient,
+  );
+};
+/**
  * Цель, итог, плюсы и минусы и весь ход — запросы человека, ответы агента, шаги, результаты.
  * @summary Работа целиком
  */
@@ -393,6 +504,100 @@ export function useGetJournalSession<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+/**
+ * Работа и все её записи — насовсем, в том числе живая: агент на следующем
+ * `log_work` получит «работа не найдена» и откроет новую. Задача остаётся.
+ * @summary Удалить работу со всем ходом (admin)
+ */
+export const deleteJournalSession = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<JournalPurgeResponse>(
+    { url: `/journal/sessions/${id}`, method: "DELETE", signal },
+    options,
+  );
+};
+
+export const getDeleteJournalSessionMutationKey = () =>
+  ["deleteJournalSession"] as const;
+
+export const getDeleteJournalSessionMutationOptions = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJournalSession>>,
+    TError,
+    DeleteJournalSessionMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteJournalSession>>,
+  TError,
+  DeleteJournalSessionMutationVariables,
+  TContext
+> => {
+  const mutationKey = getDeleteJournalSessionMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteJournalSession>>,
+    DeleteJournalSessionMutationVariables
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteJournalSession(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteJournalSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteJournalSession>>
+>;
+
+export type DeleteJournalSessionMutationError = ErrorType<
+  ForbiddenResponse | NotFoundResponse
+>;
+export type DeleteJournalSessionMutationVariables = { id: string };
+
+/**
+ * @summary Удалить работу со всем ходом (admin)
+ */
+export const useDeleteJournalSession = <
+  TError = ErrorType<ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteJournalSession>>,
+      TError,
+      DeleteJournalSessionMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteJournalSession>>,
+  TError,
+  DeleteJournalSessionMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getDeleteJournalSessionMutationOptions(options),
+    queryClient,
+  );
+};
 /**
  * Исходы работ по людям и проектам, минусы и плюсы (из итогов и по ходу),
  * открытые вопросы людям, работы, где упёрлись. Сутки — UTC.

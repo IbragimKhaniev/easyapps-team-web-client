@@ -1,14 +1,16 @@
-import { ListTodo, Plus } from 'lucide-react';
+import { Archive, ListTodo, Plus } from 'lucide-react';
 import { useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { useListTasks } from '@/api/generated/tasks/tasks';
+import { PATHS } from '@/app/paths';
 import { uiActions } from '@/app/uiStore';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useProjects } from '@/hooks/useDirectory';
+import { useSession } from '@/hooks/useSession';
 import { todayIso } from '@/lib/dates';
 import { pluralize, TASK_FORMS } from '@/lib/plural';
 import { BOARD_STATUSES } from '@/lib/tracker';
@@ -27,6 +29,7 @@ export const TasksPage = () => {
   const [params, setParams] = useSearchParams();
   const context = useTaskRowContext();
   const { map: projects } = useProjects();
+  const { isAdmin } = useSession();
 
   const filters: ITaskFiltersValue = {
     view: (params.get('view') as TTasksView) === 'board' ? 'board' : 'list',
@@ -69,14 +72,24 @@ export const TasksPage = () => {
         title={project ? project.name : 'Задачи'}
         subtitle={data ? `${pluralize(data.data.total, TASK_FORMS)}${project ? ` · ${project.key}` : ''}` : undefined}
         actions={
-          <Button
-            size={context.isDesktop ? 'lg' : 'icon'}
-            onClick={() => uiActions.openQuickAdd({ projectId: filters.project })}
-            aria-label="Новая задача"
-          >
-            <Plus />
-            {context.isDesktop && 'Новая задача'}
-          </Button>
+          <>
+            {isAdmin && (
+              <Button variant={context.isDesktop ? 'outline' : 'soft'} size={context.isDesktop ? 'lg' : 'icon'} asChild>
+                <Link to={PATHS.tasksArchive} aria-label="Архив задач" title="Архив задач">
+                  <Archive />
+                  {context.isDesktop && 'Архив'}
+                </Link>
+              </Button>
+            )}
+            <Button
+              size={context.isDesktop ? 'lg' : 'icon'}
+              onClick={() => uiActions.openQuickAdd({ projectId: filters.project })}
+              aria-label="Новая задача"
+            >
+              <Plus />
+              {context.isDesktop && 'Новая задача'}
+            </Button>
+          </>
         }
       >
         <TaskFilters value={filters} onChange={changeFilters} />

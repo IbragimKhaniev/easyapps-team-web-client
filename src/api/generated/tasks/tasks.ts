@@ -29,13 +29,18 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ArchivedTaskListResponse,
+  BadRequestResponse,
   CreateTaskBody,
   ForbiddenResponse,
+  ListArchivedTasksParams,
   ListTasksParams,
   MoveTaskBody,
   NotFoundResponse,
+  PurgeTaskParams,
   TaskDetailResponse,
   TaskListResponse,
+  TaskPurgeResponse,
   TaskResponse,
   UnauthorizedResponse,
   UpdateTaskBody,
@@ -301,6 +306,270 @@ export const useCreateTask = <
   TContext
 > => {
   return useMutation(getCreateTaskMutationOptions(options), queryClient);
+};
+/**
+ * Задачи в архиве, новые в архиве сверху: кто и когда убрал, начало
+ * описания и что уйдёт вместе с задачей при удалении насовсем — работы
+ * агентов и история (комментарии — `commentsCount`). Только администратор.
+ * @summary Архив задач (admin)
+ */
+export const listArchivedTasks = (
+  params?: ListArchivedTasksParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ArchivedTaskListResponse>(
+    { url: `/tasks/archive`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getListArchivedTasksQueryKey = (
+  params?: ListArchivedTasksParams,
+) => {
+  return [`/tasks/archive`, ...(params ? [params] : [])] as const;
+};
+
+export const getListArchivedTasksQueryOptions = <
+  TData = Awaited<ReturnType<typeof listArchivedTasks>>,
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+>(
+  params?: ListArchivedTasksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listArchivedTasks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListArchivedTasksQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listArchivedTasks>>
+  > = ({ signal }) => listArchivedTasks(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listArchivedTasks>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListArchivedTasksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listArchivedTasks>>
+>;
+export type ListArchivedTasksQueryError = ErrorType<
+  ValidationFailedResponse | ForbiddenResponse
+>;
+
+export function useListArchivedTasks<
+  TData = Awaited<ReturnType<typeof listArchivedTasks>>,
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+>(
+  params: undefined | ListArchivedTasksParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listArchivedTasks>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listArchivedTasks>>,
+          TError,
+          Awaited<ReturnType<typeof listArchivedTasks>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListArchivedTasks<
+  TData = Awaited<ReturnType<typeof listArchivedTasks>>,
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+>(
+  params?: ListArchivedTasksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listArchivedTasks>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listArchivedTasks>>,
+          TError,
+          Awaited<ReturnType<typeof listArchivedTasks>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListArchivedTasks<
+  TData = Awaited<ReturnType<typeof listArchivedTasks>>,
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+>(
+  params?: ListArchivedTasksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listArchivedTasks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Архив задач (admin)
+ */
+
+export function useListArchivedTasks<
+  TData = Awaited<ReturnType<typeof listArchivedTasks>>,
+  TError = ErrorType<ValidationFailedResponse | ForbiddenResponse>,
+>(
+  params?: ListArchivedTasksParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listArchivedTasks>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListArchivedTasksQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+/**
+ * Только задачу из архива (живую — 400: сначала в архив). Вместе с ней
+ * удаляются комментарии и история; работы агентов над ней — тоже, а с
+ * `withWork=false` остаются в журнале без задачи. Знания, занесённые из
+ * задачи, остаются — снимается только ссылка на неё. Отменить нельзя.
+ * @summary Удалить задачу из архива насовсем (admin)
+ */
+export const purgeTask = (
+  key: string,
+  params?: PurgeTaskParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<TaskPurgeResponse>(
+    { url: `/tasks/archive/${key}`, method: "DELETE", params, signal },
+    options,
+  );
+};
+
+export const getPurgeTaskMutationKey = () => ["purgeTask"] as const;
+
+export const getPurgeTaskMutationOptions = <
+  TError = ErrorType<BadRequestResponse | ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof purgeTask>>,
+    TError,
+    PurgeTaskMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof purgeTask>>,
+  TError,
+  PurgeTaskMutationVariables,
+  TContext
+> => {
+  const mutationKey = getPurgeTaskMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof purgeTask>>,
+    PurgeTaskMutationVariables
+  > = (props) => {
+    const { key, params } = props ?? {};
+
+    return purgeTask(key, params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PurgeTaskMutationResult = NonNullable<
+  Awaited<ReturnType<typeof purgeTask>>
+>;
+
+export type PurgeTaskMutationError = ErrorType<
+  BadRequestResponse | ForbiddenResponse | NotFoundResponse
+>;
+export type PurgeTaskMutationVariables = {
+  key: string;
+  params?: PurgeTaskParams;
+};
+
+/**
+ * @summary Удалить задачу из архива насовсем (admin)
+ */
+export const usePurgeTask = <
+  TError = ErrorType<BadRequestResponse | ForbiddenResponse | NotFoundResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof purgeTask>>,
+      TError,
+      PurgeTaskMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof purgeTask>>,
+  TError,
+  PurgeTaskMutationVariables,
+  TContext
+> => {
+  return useMutation(getPurgeTaskMutationOptions(options), queryClient);
 };
 /**
  * @summary Карточка задачи

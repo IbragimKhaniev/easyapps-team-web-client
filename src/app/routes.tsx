@@ -16,6 +16,7 @@ const OverviewPage = lazyPage(() => import('@/features/overview/OverviewPage'), 
 const MyTasksPage = lazyPage(() => import('@/features/tasks/pages/MyTasksPage'), 'MyTasksPage');
 const TasksPage = lazyPage(() => import('@/features/tasks/pages/TasksPage'), 'TasksPage');
 const TaskRedirect = lazyPage(() => import('@/features/tasks/pages/TaskRedirect'), 'TaskRedirect');
+const TaskArchivePage = lazyPage(() => import('@/features/tasks/pages/TaskArchivePage'), 'TaskArchivePage');
 const SettingsPage = lazyPage(() => import('@/features/settings/SettingsPage'), 'SettingsPage');
 const MorePage = lazyPage(() => import('@/features/more/MorePage'), 'MorePage');
 const ContentPlanPage = lazyPage(() => import('@/features/media/plan/ContentPlanPage'), 'ContentPlanPage');
@@ -45,6 +46,8 @@ const routes: RouteObject[] = [
       { index: true, element: page(<OverviewPage />) },
       { path: PATHS.myTasks, element: page(<MyTasksPage />) },
       { path: PATHS.tasks, element: page(<TasksPage />) },
+      // Точный адрес выигрывает у `/tasks/:key` — «archive» не примут за ключ задачи.
+      { path: PATHS.tasksArchive, element: page(<TaskArchivePage />) },
       { path: `${PATHS.tasks}/:key`, element: page(<TaskRedirect />) },
       { path: PATHS.settings, element: page(<SettingsPage />) },
       { path: PATHS.more, element: page(<MorePage />) },

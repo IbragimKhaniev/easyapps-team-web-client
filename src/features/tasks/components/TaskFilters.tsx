@@ -20,7 +20,7 @@ export interface ITaskFiltersValue {
 const ALL = 'all';
 
 /** Капсула фильтра. forwardRef: её оборачивает триггер выбора (Radix передаёт ref). */
-const FilterPill = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }>(
+export const FilterPill = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }>(
   ({ active, children, className, ...props }, ref) => (
     <button
       ref={ref}

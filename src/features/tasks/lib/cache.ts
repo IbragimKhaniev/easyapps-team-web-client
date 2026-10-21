@@ -3,7 +3,7 @@ import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { getGetActivityFeedQueryKey } from '@/api/generated/activity/activity';
 import { getGetOverviewQueryKey } from '@/api/generated/overview/overview';
 import { getListProjectsQueryKey } from '@/api/generated/projects/projects';
-import { getGetTaskQueryKey, getListTasksQueryKey } from '@/api/generated/tasks/tasks';
+import { getGetTaskQueryKey, getListArchivedTasksQueryKey, getListTasksQueryKey } from '@/api/generated/tasks/tasks';
 import type { Task, TaskDetailResponse, TaskListResponse } from '@/api/models';
 
 /**
@@ -59,9 +59,10 @@ export const removeTaskEverywhere = (queryClient: QueryClient, key: string): voi
   });
 };
 
-/** После изменения — перечитать всё, что от задач зависит. */
+/** После изменения — перечитать всё, что от задач зависит (архив — только у администратора, у остальных его нет в кэше). */
 export const refreshTaskViews = (queryClient: QueryClient, key?: string): void => {
   void queryClient.invalidateQueries({ queryKey: LISTS_PREFIX });
+  void queryClient.invalidateQueries({ queryKey: getListArchivedTasksQueryKey() });
   void queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
   void queryClient.invalidateQueries({ queryKey: getGetActivityFeedQueryKey() });
   void queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
