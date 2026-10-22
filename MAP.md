@@ -1,5 +1,5 @@
 <!-- map-covers: src -->
-<!-- map-base: 9b318a3 -->
+<!-- map-base: 67ffcb2 -->
 
 # Карта: фронт team.easyapps.click
 
@@ -22,7 +22,8 @@ API — `team-api` из `easyapps-web-server` (его карта —
 
 | Что | Где | Зачем знать |
 |---|---|---|
-| Маршруты, адреса, навигация | `app/routes.tsx`, `app/paths.ts`, `app/navigation.ts` | адреса только из `PATHS`; `?task=`, `?post=` — слои поверх экрана |
+| Маршруты, адреса, навигация | `app/routes.tsx`, `app/paths.ts`, `app/navigation.ts` | адреса только из `PATHS`; `?task=`, `?post=` — слои поверх экрана; все маршруты — внутри корня с `errorElement: <RouteError />` |
+| Сбой загрузки чанка после выката | `lib/appUpdate.ts` — решение: экран, отсчёт, защита от петли; `lib/lazyNamed.ts` — всё ленивое; `components/common/AppUpdateScreen.tsx` — экран «Платформа обновилась» (кольцо 3 с, «Перезапустить сейчас»), `hooks/useAppUpdate.ts` — по нему `App.tsx` рисует экран вместо всего дерева; прочие ошибки страниц — `components/layout/RouteError.tsx` («Что-то пошло не так» с текстом ошибки) | вместо голого «Unexpected Application Error!» роутера; устройство — как в easyapps-web-client (`src/lib/chunk-reload.ts`) |
 | Оболочка | `components/layout/AppShell.tsx` (+ Sidebar, Topbar, MobileTabBar, PageHeader) | общие слои: карточка задачи, конструктор поста, загрузки, ⌘K |
 | Клиент API | `api/http.ts` (мутатор orval), `api/generated`, `api/models` — генерируются | руками не править; `npm run api` |
 | Токены дизайна | `tailwind.config.ts`, `index.css` (`card-surface`, `tile-brand`, `tile-deep`, `bg-hatched`) | цвета — шкала `brand` вокруг `#3CC1F6` |
@@ -58,7 +59,7 @@ API — `team-api` из `easyapps-web-server` (его карта —
   `useLastPresent(id)` — пока оно закрывается, id в адресе уже пуст, а запись
   должна остаться на месте, иначе мелькает «не найдена».
 - **Код слоя — лениво, только когда параметр есть.** `PostComposerHost` и
-  `WorkHost` возвращают `null` без параметра и грузят лист по `React.lazy`.
+  `WorkHost` возвращают `null` без параметра и грузят лист через `lazyNamed`.
   `TaskSheet` иначе: оболочка (панель с пружиной и Esc, шторка vaul) в стартовом
   коде — хост, вернувший `null`, оборвал бы анимацию закрытия, — а лениво только
   `TaskDetail`; пока он грузится, на его месте `TaskDetailSkeleton`.
@@ -73,6 +74,15 @@ API — `team-api` из `easyapps-web-server` (его карта —
 - **После удаления насовсем** перечитываются списки (`refreshTaskViews` — и архив,
   `refreshJournalViews` — ленты журнала, разбор, «Команда»), а карточку удалённой
   задачи или работы — нет: она закрывается, а перечитанная мелькнула бы «не найдена».
+- **Вкладка пережила выкат** — старых чанков на хостинге нет, он отвечает на них
+  200 с HTML (SPA-фолбэк), и ленивый import() падает. Сбой ловят `lazyNamed`,
+  `RouteError` и событие Vite `vite:preloadError`, а решает `lib/appUpdate.ts`:
+  App вместо всего дерева рисует «Платформа обновилась», через 3 с —
+  перезагрузка. Сами перезагружаемся раз в 30 с на адрес: упало снова сразу
+  после перезагрузки (сеть, сломанный выкат) — экран без отсчёта, только кнопка.
+  Уход со страницы (`beforeunload`, `markPageLeaving` перед редиректом на вход)
+  экрана не вызывает: Safari обрывает недогруженные модули при переходе.
+  Модуль, упавший при выполнении, — не выкат: его ловит `RouteError`.
 
 ## Правила, которые нельзя нарушать
 
@@ -102,13 +112,23 @@ API — `team-api` из `easyapps-web-server` (его карта —
   вернёт его на старт каждого телефона. Утилиты классов — в своём чанке
   `classnames` (`vite.config.ts`), иначе rollup кладёт `clsx` в чанк графиков и
   тянет его на старте.
+- **Ленивое — только через `lazyNamed`** (`lib/lazyNamed.ts`), не голым
+  `React.lazy`: иначе сбой чанка после выката обходит экран «Платформа
+  обновилась». Сам экран, `RouteError` и `lib/appUpdate.ts` — в стартовом коде и
+  ничего ленивого не тянут: лениво их не загрузить по той же причине, по которой
+  они нужны.
+- **Сбой чанка узнаётся по тексту ошибки** (`isChunkLoadError`): Chrome и Firefox —
+  «dynamically imported module», Safari — «Importing a module script failed.» и
+  «'text/html' is not a valid JavaScript MIME type.», Vite — «Unable to preload
+  CSS». Новый текст браузера не узнан — человек увидит «Что-то пошло не так» с
+  ним в плашке: добавь его в регулярку.
 
 ## Куда добавлять новое
 
 ### Новый экран медиа
 
 1. Страница в `features/media/<раздел>/`, адрес — `PATHS.media` (`app/paths.ts`),
-   маршрут — `app/routes.tsx` (`lazyPage`).
+   маршрут — `app/routes.tsx` (`lazyNamed`).
 2. Пункт навигации — `NAV_SECTIONS` и `MEDIA_TABS` (`app/navigation.ts`).
 3. На телефоне под заголовком — `MediaSectionTabs`.
 
@@ -141,3 +161,9 @@ npx tsc -b && npm run lint && npm test && npm run build
 ```
 
 Вживую — `npm run dev` + локальный team-api (база и S3 — карта team-api).
+
+Экран «Платформа обновилась» — на сборке, как после настоящего выката:
+`npm run build`, `npm run preview`, открыть страницу и убрать из `dist/assets`
+чанк ленивой страницы (`ConnectorConsentPage-*.js` — она без входа), затем
+перейти на неё внутри вкладки. Preview, как и прод, отвечает на пропавший файл
+200 с HTML. Вернуть файл — и «Перезапустить» открывает страницу.
