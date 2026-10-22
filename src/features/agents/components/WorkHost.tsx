@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 
+import { lazyNamed } from '@/lib/lazyNamed';
 import { useWorkParam } from '../hooks/useWorkParam';
 
-const WorkSheet = lazy(async () => ({ default: (await import('./WorkSheet')).WorkSheet }));
+const WorkSheet = lazyNamed(() => import('./WorkSheet'), 'WorkSheet');
 
 /** Работа журнала поверх любого экрана; код карточки грузится, только когда в адресе есть `?work=`. */
 export const WorkHost = () => {

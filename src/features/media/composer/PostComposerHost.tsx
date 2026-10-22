@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 
+import { lazyNamed } from '@/lib/lazyNamed';
 import { usePostParam } from '../hooks/usePostParam';
 
-const PostComposerSheet = lazy(async () => ({ default: (await import('./PostComposerSheet')).PostComposerSheet }));
+const PostComposerSheet = lazyNamed(() => import('./PostComposerSheet'), 'PostComposerSheet');
 
 /**
  * Конструктор поста живёт поверх любого экрана, но его код (редактор,

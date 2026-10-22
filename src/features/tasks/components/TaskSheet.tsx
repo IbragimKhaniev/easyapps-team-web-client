@@ -1,14 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { lazy, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { lazyNamed } from '@/lib/lazyNamed';
 import { useTaskParam } from '../hooks/useTaskParam';
 import { TaskDetailSkeleton } from './detail/TaskDetailSkeleton';
 
 const PANEL_SPRING = { type: 'spring', stiffness: 420, damping: 40 } as const;
 
-const TaskDetail = lazy(async () => ({ default: (await import('./detail/TaskDetail')).TaskDetail }));
+const TaskDetail = lazyNamed(() => import('./detail/TaskDetail'), 'TaskDetail');
 
 /**
  * Содержимое карточки — отдельным чанком: в нём markdown (~160 КБ), на старте он

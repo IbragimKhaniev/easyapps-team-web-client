@@ -79,10 +79,17 @@ const config: Config = {
           from: { backgroundPosition: '200% 0' },
           to: { backgroundPosition: '-200% 0' },
         },
+        // Кольцо отсчёта на экране «Платформа обновилась»: штрих тает до нуля.
+        // Длину окружности (--ring-length) и время задаёт сам элемент.
+        'countdown-ring': {
+          from: { strokeDashoffset: '0' },
+          to: { strokeDashoffset: 'var(--ring-length)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
         shimmer: 'shimmer 1.6s linear infinite',
+        'countdown-ring': 'countdown-ring 3s linear forwards',
       },
     },
   },

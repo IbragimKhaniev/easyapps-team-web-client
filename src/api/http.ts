@@ -1,5 +1,7 @@
 import Axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
+import { markPageLeaving } from '@/lib/appUpdate';
+
 /**
  * HTTP-клиент для хуков orval. В проде — `VITE_API_BASE_URL`
  * (`https://team-api.easyapps.click/api`), локально — `/api` через прокси vite.
@@ -23,6 +25,8 @@ const redirectToLogin = (): void => {
   const { pathname, search } = window.location;
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) return;
   const back = encodeURIComponent(`${pathname}${search}`);
+  // Переход оборвёт недогруженные чанки — их сбой не повод для экрана обновления
+  markPageLeaving();
   window.location.assign(`${LOGIN_PATH}?redirect=${back}`);
 };
 
