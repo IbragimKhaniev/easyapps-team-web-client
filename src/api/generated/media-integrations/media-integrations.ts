@@ -37,6 +37,9 @@ import type {
   MtprotoCodeResponse,
   MtprotoSignInBody,
   UpdateIntegrationBody,
+  VkCallbackBody,
+  VkConnectBody,
+  VkConnectResponse,
 } from "../../models";
 
 import { customInstance } from "../../http";
@@ -594,6 +597,194 @@ export const useSignInTelegramMtproto = <
     getSignInTelegramMtprotoMutationOptions(options),
     queryClient,
   );
+};
+/**
+ * Сохраняет ID сообщества и возвращает адрес id.vk.ru, куда уходит администратор.
+ * @summary VK: ссылка на подтверждение доступа
+ */
+export const startVkConnect = (
+  vkConnectBody: BodyType<VkConnectBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<VkConnectResponse>(
+    {
+      url: `/media/integrations/vk/connect`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: vkConnectBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getStartVkConnectMutationKey = () => ["startVkConnect"] as const;
+
+export const getStartVkConnectMutationOptions = <
+  TError = ErrorType<BadRequestResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startVkConnect>>,
+    TError,
+    StartVkConnectMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startVkConnect>>,
+  TError,
+  StartVkConnectMutationVariables,
+  TContext
+> => {
+  const mutationKey = getStartVkConnectMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startVkConnect>>,
+    StartVkConnectMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return startVkConnect(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartVkConnectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startVkConnect>>
+>;
+export type StartVkConnectMutationBody = BodyType<VkConnectBody>;
+export type StartVkConnectMutationError = ErrorType<BadRequestResponse>;
+export type StartVkConnectMutationVariables = { data: BodyType<VkConnectBody> };
+
+/**
+ * @summary VK: ссылка на подтверждение доступа
+ */
+export const useStartVkConnect = <
+  TError = ErrorType<BadRequestResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof startVkConnect>>,
+      TError,
+      StartVkConnectMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof startVkConnect>>,
+  TError,
+  StartVkConnectMutationVariables,
+  TContext
+> => {
+  return useMutation(getStartVkConnectMutationOptions(options), queryClient);
+};
+/**
+ * Код, device_id и state со страницы возврата меняются на ключи. Секреты в ответ не попадают.
+ * @summary VK: сохранить ключи после подтверждения
+ */
+export const finishVkConnect = (
+  vkCallbackBody: BodyType<VkCallbackBody>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<IntegrationResponse>(
+    {
+      url: `/media/integrations/vk/callback`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: vkCallbackBody,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getFinishVkConnectMutationKey = () => ["finishVkConnect"] as const;
+
+export const getFinishVkConnectMutationOptions = <
+  TError = ErrorType<BadRequestResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof finishVkConnect>>,
+    TError,
+    FinishVkConnectMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof finishVkConnect>>,
+  TError,
+  FinishVkConnectMutationVariables,
+  TContext
+> => {
+  const mutationKey = getFinishVkConnectMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof finishVkConnect>>,
+    FinishVkConnectMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return finishVkConnect(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FinishVkConnectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof finishVkConnect>>
+>;
+export type FinishVkConnectMutationBody = BodyType<VkCallbackBody>;
+export type FinishVkConnectMutationError = ErrorType<BadRequestResponse>;
+export type FinishVkConnectMutationVariables = {
+  data: BodyType<VkCallbackBody>;
+};
+
+/**
+ * @summary VK: сохранить ключи после подтверждения
+ */
+export const useFinishVkConnect = <
+  TError = ErrorType<BadRequestResponse>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof finishVkConnect>>,
+      TError,
+      FinishVkConnectMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof finishVkConnect>>,
+  TError,
+  FinishVkConnectMutationVariables,
+  TContext
+> => {
+  return useMutation(getFinishVkConnectMutationOptions(options), queryClient);
 };
 /**
  * @summary Telegram: забыть вход

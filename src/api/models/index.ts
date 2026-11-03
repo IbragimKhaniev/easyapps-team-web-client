@@ -314,3 +314,7 @@ export * from "./uploadPipelineFileInput";
 export * from "./uploadPipelineFileParams";
 export * from "./uploadPipelineFileTarget";
 export * from "./validationFailedResponse";
+export * from "./vkCallbackBody";
+export * from "./vkConnectBody";
+export * from "./vkConnectResponse";
+export * from "./vkConnectResponseData";

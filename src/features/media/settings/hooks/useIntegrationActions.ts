@@ -3,14 +3,16 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import {
+  useFinishVkConnect,
   useLogoutTelegramMtproto,
   useRunMediaJob,
   useSendTelegramMtprotoCode,
   useSignInTelegramMtproto,
+  useStartVkConnect,
   useTestIntegration,
   useUpdateIntegration,
 } from '@/api/generated/media-integrations/media-integrations';
-import type { Integration, SocialPlatform, UpdateIntegrationBody } from '@/api/models';
+import type { Integration, SocialPlatform, UpdateIntegrationBody, VkCallbackBody } from '@/api/models';
 import { apiErrorMessage } from '@/lib/errors';
 import { refreshIntegrationViews, refreshStatsViews } from '../../lib/cache';
 import { PLATFORM_META } from '../../lib/platforms';
@@ -24,6 +26,8 @@ export const useIntegrationActions = () => {
   const signIn = useSignInTelegramMtproto();
   const logout = useLogoutTelegramMtproto();
   const runJob = useRunMediaJob();
+  const startVk = useStartVkConnect();
+  const finishVkConnect = useFinishVkConnect();
 
   const guard = useCallback(async <T,>(work: () => Promise<T>, fallback: string): Promise<T | null> => {
     try {
@@ -69,6 +73,18 @@ export const useIntegrationActions = () => {
       return result;
     }, 'Не удалось выйти'), [guard, logout]);
 
+  const connectVk = useCallback(async (groupId: number) => {
+    try {
+      const response = await startVk.mutateAsync({ data: { groupId } });
+      window.location.assign(response.data.authorizationUrl);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Не удалось открыть вход VK'));
+    }
+  }, [startVk]);
+
+  const finishVk = useCallback((body: VkCallbackBody) =>
+    guard(async () => (await finishVkConnect.mutateAsync({ data: body })).data, 'VK не завершил вход'), [finishVkConnect, guard]);
+
   const runNow = useCallback((name: string) =>
     guard(async () => {
       const result = (await runJob.mutateAsync({ name })).data;
@@ -83,8 +99,11 @@ export const useIntegrationActions = () => {
     confirmCode,
     signOut,
     runNow,
+    connectVk,
+    finishVk,
     saving: update.isPending,
     checking: test.isPending,
     signingIn: sendCode.isPending || signIn.isPending,
+    connectingVk: startVk.isPending,
   };
 };

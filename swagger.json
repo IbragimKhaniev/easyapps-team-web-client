@@ -2929,6 +2929,63 @@
           }
         }
       },
+      "VkConnectBody": {
+        "type": "object",
+        "required": [
+          "groupId"
+        ],
+        "properties": {
+          "groupId": {
+            "type": "integer",
+            "example": 237267336
+          }
+        }
+      },
+      "VkConnectResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "data"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "authorizationUrl"
+            ],
+            "properties": {
+              "authorizationUrl": {
+                "type": "string"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        }
+      },
+      "VkCallbackBody": {
+        "type": "object",
+        "required": [
+          "code",
+          "deviceId",
+          "state"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
       "MtprotoCodeBody": {
         "type": "object",
         "required": [
@@ -8634,6 +8691,76 @@
         "responses": {
           "200": {
             "description": "Вход выполнен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations/vk/connect": {
+      "post": {
+        "operationId": "startVkConnect",
+        "summary": "VK: ссылка на подтверждение доступа",
+        "description": "Сохраняет ID сообщества и возвращает адрес id.vk.ru, куда уходит администратор.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VkConnectBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ссылка на вход",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VkConnectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/media/integrations/vk/callback": {
+      "post": {
+        "operationId": "finishVkConnect",
+        "summary": "VK: сохранить ключи после подтверждения",
+        "description": "Код, device_id и state со страницы возврата меняются на ключи. Секреты в ответ не попадают.",
+        "tags": [
+          "Media Integrations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VkCallbackBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Площадка после входа",
             "content": {
               "application/json": {
                 "schema": {

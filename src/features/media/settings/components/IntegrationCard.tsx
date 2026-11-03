@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { Integration } from '@/api/models';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { formatLongDate, timeAgo } from '@/lib/dates';
+import { formatDateTime, formatLongDate, timeAgo } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 import { PlatformIcon } from '../../components/PlatformIcon';
 import { formatCompact } from '../../lib/format';
@@ -82,6 +82,23 @@ export const IntegrationCard = ({ integration, actions }: IIntegrationCardProps)
 
       {platform === 'instagram' && integration.tokenExpiresAt && (
         <p className="text-[12.5px] text-ink-muted">Токен действует до {formatLongDate(integration.tokenExpiresAt.slice(0, 10))} — продлевается сам раз в неделю.</p>
+      )}
+
+      {platform === 'vk' && (
+        <div className="flex flex-col items-start gap-2">
+          {integration.tokenExpiresAt && (
+            <p className="text-[12.5px] text-ink-muted">Ключ действует до {formatDateTime(integration.tokenExpiresAt)} и продлевается сам.</p>
+          )}
+          <Button
+            type="button"
+            variant="soft"
+            onClick={() => void actions.connectVk(Number(draft.settings.groupId))}
+            disabled={!integration.canStoreSecrets || !/^\d+$/.test(draft.settings.groupId.trim()) || actions.connectingVk}
+          >
+            {actions.connectingVk && <Loader2 className="animate-spin" />}
+            {integration.secrets.accessToken ? 'Войти заново' : 'Войти через VK'}
+          </Button>
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
